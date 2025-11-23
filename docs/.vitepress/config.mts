@@ -30,14 +30,7 @@ export default withMermaid({
     },
     nav: [
       {text: 'Home', link: '/'},
-      {
-        text: '框架',
-        items: [
-          { text: '框架介绍', link: '/framework/' },
-          { text: 'BOM 物流清单', link: '/framework/bom/' },
-          { text: 'Parent 父工程', link: '/framework/parent/' },
-        ]
-      },
+      {text: '框架',link: '/framework'},
       {text: '权限', link: '/auth'},
       {text: '代码生成', link: '/generator'},
       {text: '接口平台', link: '/api'},
@@ -51,16 +44,18 @@ export default withMermaid({
       },
 
     ],
-    sidebar: [
-      {
-        text: 'Examples',
-        items: [
-          {text: 'Markdown Examples', link: '/markdown-examples'},
-          {text: 'Runtime API Examples', link: '/api-examples'}
-        ]
-      }
-    ],
-
+    sidebar: {
+      '/framework/': [
+        {
+          text: '框架',
+          items: [
+            {text: '框架为何物', link: '/framework/'},
+            {text: 'Parent 父工程', link: '/framework/parent'},
+            {text: 'BOM 物料清单', link: '/framework/bom'},
+          ]
+        },
+      ],
+    },
     editLink: {
       text: '编辑此页面',
       pattern: 'https://github.com/shrimp-group/sh-doc/edit/main/docs/:path'
