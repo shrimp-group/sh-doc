@@ -1,11 +1,18 @@
 {
-  "devDependencies": {
-    "vitepress": "^2.0.0-alpha.15",
-    "vue": "^3.5.24"
-  },
+  "name": "sh-doc",
+  "version": "1.0.0",
+  "description": "sh-doc",
+  "main": "index.js",
+  "author": "shrimp",
+  "license": "MIT",
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
     "preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "vitepress": "latest",
+    "mermaid": "latest",
+    "vitepress-plugin-mermaid": "latest"
   }
 }
