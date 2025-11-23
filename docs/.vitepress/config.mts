@@ -52,6 +52,10 @@ export default withMermaid({
             {text: '框架为何物', link: '/framework/'},
             {text: 'Parent 父工程', link: '/framework/parent'},
             {text: 'BOM 物料清单', link: '/framework/bom'},
+            {text: 'Core 核心模块', link: '/framework/core'},
+            {text: 'ORM 持久框架', link: '/framework/orm'},
+            {text: 'Redis 缓存', link: '/framework/redis'},
+            {text: 'Spring 偶合器', link: '/framework/spring'},
           ]
         },
       ],
