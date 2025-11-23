@@ -30,12 +30,26 @@ export default withMermaid({
     },
     nav: [
       {text: 'Home', link: '/'},
-      {text: '框架', link: '/framework'},
+      {
+        text: '框架',
+        items: [
+          { text: '框架介绍', link: '/framework/' },
+          { text: 'BOM 物流清单', link: '/framework/bom/' },
+          { text: 'Parent 父工程', link: '/framework/parent/' },
+        ]
+      },
       {text: '权限', link: '/auth'},
       {text: '代码生成', link: '/generator'},
       {text: '接口平台', link: '/api'},
       {text: '商城', link: '/mall'},
-      {text: '个人', link: 'https://doc.wkclz.com'}
+      {
+        text: '关于',
+        items: [
+          { text: '关于本项目', link: '/about/' },
+          { text: '个人空间', link: 'https://doc.wkclz.com' },
+        ]
+      },
+
     ],
     sidebar: [
       {
