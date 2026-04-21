@@ -33,7 +33,7 @@ export default withMermaid({
       {text: '框架',link: '/framework'},
       {text: '权限', link: '/auth'},
       {text: '代码生成', link: '/generator'},
-      {text: '接口平台', link: '/api'},
+      {text: '微模块', link: '/micro'},
       {text: '商城', link: '/mall'},
       {
         text: '关于',
