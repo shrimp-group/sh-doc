@@ -19,5 +19,5 @@ java -jar iam-admin-starter.jar
 
 ### 访问地址
 
-- 服务地址：http://localhost:8080
-- API 文档：http://localhost:8080/swagger-ui.html
+- 服务地址：`http://localhost:8080`
+- API 文档：`http://localhost:8080/swagger-ui.html`
