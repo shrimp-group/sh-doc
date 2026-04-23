@@ -71,7 +71,7 @@ export default withMermaid({
         items: [
           {text: '概述', link: '/micro/'},
           {text: '审计服务', link: '/micro/micro-audit'},
-          {text: '字典服务', link: '/micro/micro-dict'},
+          {text: '字典服务', link: '/micro/micro-dict/'},
           {text: '文件服务', link: '/micro/micro-file/'},
           {text: '表单服务', link: '/micro/micro-form'},
           {text: '函数服务', link: '/micro/micro-fun'},
@@ -221,10 +221,17 @@ export default withMermaid({
           items: [{text: '审计服务', link: '/micro/micro-audit'}]
         },
       ],
-      '/micro/micro-dict': [
+      '/micro/micro-dict/': [
         {
-          text: '微模块',
-          items: [{text: '字典服务', link: '/micro/micro-dict'}]
+          text: '字典服务',
+          items: [
+            {text: '概述', link: '/micro/micro-dict/'},
+            {text: '设计思路', link: '/micro/micro-dict/design'},
+            {text: '功能集成', link: '/micro/micro-dict/integration'},
+            {text: '后端使用', link: '/micro/micro-dict/backend-usage'},
+            {text: '前端使用', link: '/micro/micro-dict/frontend-usage'},
+            {text: '高级配置', link: '/micro/micro-dict/advanced'},
+          ]
         },
       ],
       '/micro/micro-file/': [
@@ -234,71 +241,7 @@ export default withMermaid({
             {text: '概述', link: '/micro/micro-file/'},
             {text: '设计思路', link: '/micro/micro-file/design'},
             {text: '功能集成', link: '/micro/micro-file/integration'},
-            {text: '后端使用', link: '/micro/micro-file/backend-usage'},
-            {text: '前端使用', link: '/micro/micro-file/frontend-usage'},
-            {text: '高级配置', link: '/micro/micro-file/advanced'},
-          ]
-        },
-      ],
-      '/micro/micro-file/design': [
-        {
-          text: '文件服务',
-          items: [
-            {text: '概述', link: '/micro/micro-file/'},
-            {text: '设计思路', link: '/micro/micro-file/design'},
-            {text: '功能集成', link: '/micro/micro-file/integration'},
-            {text: '后端使用', link: '/micro/micro-file/backend-usage'},
-            {text: '前端使用', link: '/micro/micro-file/frontend-usage'},
-            {text: '高级配置', link: '/micro/micro-file/advanced'},
-          ]
-        },
-      ],
-      '/micro/micro-file/integration': [
-        {
-          text: '文件服务',
-          items: [
-            {text: '概述', link: '/micro/micro-file/'},
-            {text: '设计思路', link: '/micro/micro-file/design'},
-            {text: '功能集成', link: '/micro/micro-file/integration'},
-            {text: '后端使用', link: '/micro/micro-file/backend-usage'},
-            {text: '前端使用', link: '/micro/micro-file/frontend-usage'},
-            {text: '高级配置', link: '/micro/micro-file/advanced'},
-          ]
-        },
-      ],
-      '/micro/micro-file/backend-usage': [
-        {
-          text: '文件服务',
-          items: [
-            {text: '概述', link: '/micro/micro-file/'},
-            {text: '设计思路', link: '/micro/micro-file/design'},
-            {text: '功能集成', link: '/micro/micro-file/integration'},
-            {text: '后端使用', link: '/micro/micro-file/backend-usage'},
-            {text: '前端使用', link: '/micro/micro-file/frontend-usage'},
-            {text: '高级配置', link: '/micro/micro-file/advanced'},
-          ]
-        },
-      ],
-      '/micro/micro-file/frontend-usage': [
-        {
-          text: '文件服务',
-          items: [
-            {text: '概述', link: '/micro/micro-file/'},
-            {text: '设计思路', link: '/micro/micro-file/design'},
-            {text: '功能集成', link: '/micro/micro-file/integration'},
-            {text: '后端使用', link: '/micro/micro-file/backend-usage'},
-            {text: '前端使用', link: '/micro/micro-file/frontend-usage'},
-            {text: '高级配置', link: '/micro/micro-file/advanced'},
-          ]
-        },
-      ],
-      '/micro/micro-file/advanced': [
-        {
-          text: '文件服务',
-          items: [
-            {text: '概述', link: '/micro/micro-file/'},
-            {text: '设计思路', link: '/micro/micro-file/design'},
-            {text: '功能集成', link: '/micro/micro-file/integration'},
+            {text: '服务商', link: '/micro/micro-file/storage-providers'},
             {text: '后端使用', link: '/micro/micro-file/backend-usage'},
             {text: '前端使用', link: '/micro/micro-file/frontend-usage'},
             {text: '高级配置', link: '/micro/micro-file/advanced'},
