@@ -366,8 +366,8 @@ docker run -d \
 
 #### 访问控制台
 
-- API 地址：http://localhost:9000
-- 控制台地址：http://localhost:9001
+- API 地址：`http://localhost:9000`
+- 控制台地址：`http://localhost:9001`
 - 默认账号：admin / admin123
 
 ### 配置方式
