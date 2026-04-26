@@ -80,7 +80,7 @@ export default withMermaid({
           {text: '脱敏服务', link: '/micro/micro-mask'},
           {text: '消息服务', link: '/micro/micro-msg'},
           {text: '支付服务', link: '/micro/micro-pay'},
-          {text: 'PDF 服务', link: '/micro/micro-pdf'},
+          {text: 'PDF服务', link: '/micro/micro-pdf'},
           {text: '关联检查', link: '/micro/micro-rmcheck'},
           {text: '序列服务', link: '/micro/micro-seq'},
           {text: '微信小程序', link: '/micro/micro-wxapp'},

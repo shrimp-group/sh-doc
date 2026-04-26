@@ -1,139 +1,215 @@
 # 高级配置
 
-## 字典分类管理
+## 缓存配置
 
-字典分类（dictCtg）用于对字典类型进行分组管理，便于维护和查找。
+### 缓存参数
 
-### 常见分类
+| 配置项 | 是否必填 | 默认值 | 可选值 | 说明 |
+|--------|----------|--------|--------|------|
+| `shrimp.dict.cache.enabled` | 否 | true | true/false | 是否启用本地缓存 |
+| `shrimp.dict.cache.refresh-interval` | 否 | 30 | 正整数 | 缓存刷新间隔（秒） |
+| `shrimp.dict.cache.max-dicts` | 否 | 1000 | 正整数 | 最大缓存字典数量 |
+| `shrimp.dict.cache.expire-time` | 否 | 3600 | 正整数 | 缓存过期时间（秒） |
 
-| 分类 | 说明 | 示例字典类型 |
-|------|------|-------------|
-| 系统 | 系统基础字典 | USER_STATUS, GENDER, NATION |
-| 业务 | 业务相关字典 | ORDER_STATUS, PAYMENT_TYPE |
-| 配置 | 系统配置字典 | SWITCH_CONFIG, PARAM_TYPE |
+### 配置示例
 
-### 分类规范
-
-1. 分类名称简洁明了
-2. 同类字典使用相同分类
-3. 避免分类过多，建议控制在 10 个以内
-
-## 字典项 Element 类型
-
-elType 字段用于前端组件样式配置，常见值：
-
-| elType | Element Plus 标签类型 | 适用场景 |
-|--------|----------------------|----------|
-| success | 绿色 | 正常、成功、启用 |
-| danger | 红色 | 禁用、失败、异常 |
-| warning | 橙色 | 警告、待处理 |
-| info | 灰色 | 普通、默认 |
-| primary | 蓝色 | 主要、重要 |
-
-### 使用示例
-
-```vue
-<el-tag :type="dictItem.elType">
-  {{ dictItem.dictLabel }}
-</el-tag>
-```
-
-## 多租户支持
-
-字典服务支持多租户场景，每个租户可以有独立的字典数据。
-
-### 使用方式
-
-```java
-// 获取字典时自动根据当前租户隔离
-String label = dictCache.get("USER_STATUS", "1");
-// 系统会根据当前登录用户的租户编码获取对应字典
-```
-
-## 字典数据迁移
-
-### 环境迁移步骤
-
-1. **导出字典**：在源环境调用 Copy 接口
-2. **保存数据**：将返回的 JSON 数据保存
-3. **导入字典**：在目标环境调用 Paste 接口
-
-### 迁移脚本示例
-
-```bash
-# 导出字典
-curl "http://dev-api/micro-dict/dict/copy?dictTypes=USER_STATUS,ORDER_STATUS" > dict_backup.json
-
-# 导入字典
-curl -X POST "http://test-api/micro-dict/dict/paste" \
-  -H "Content-Type: application/json" \
-  -d @dict_backup.json
+```yaml
+shrimp:
+  dict:
+    cache:
+      enabled: true
+      refresh-interval: 30
+      max-dicts: 1000
+      expire-time: 3600
 ```
 
 ## 性能优化
 
-### 缓存预热
+### 缓存策略
 
-服务启动时自动加载字典缓存，无需手动预热。
+1. **预加载**：服务启动时预加载常用字典
+2. **批量查询**：使用多字典查询接口减少请求次数
+3. **缓存命中率**：监控缓存命中率，优化缓存策略
+4. **异步刷新**：字典变更时异步刷新缓存
 
-### 批量查询
+### 预加载配置
 
-推荐使用批量接口获取多个字典：
+```java
+@Component
+public class DictPreloader implements ApplicationRunner {
 
-```http
-GET /micro-dict/common/dicts/list?dictType=USER_STATUS,ORDER_STATUS,GENDER
-```
+    @Autowired
+    private MdmDictItemService mdmDictItemService;
 
-减少 HTTP 请求次数，提高性能。
+    @Override
+    public void run(ApplicationArguments args) {
+        // 预加载常用字典
+        List<String> commonDictTypes = Arrays.asList(
+            "USER_STATUS",
+            "ORDER_STATUS",
+            "PAYMENT_TYPE",
+            "PRODUCT_CATEGORY"
+        );
 
-### 前端缓存
+        for (String dictType : commonDictTypes) {
+            mdmDictItemService.getDictItemsByDictType(dictType);
+        }
 
-前端应实现字典缓存，避免重复请求：
-
-```typescript
-const dictCache = new Map<string, DictItem[]>()
-
-export async function loadDict(dictType: string) {
-  if (dictCache.has(dictType)) {
-    return dictCache.get(dictType)!
-  }
-  // ... 加载并缓存
+        System.out.println("字典预加载完成");
+    }
 }
 ```
 
-## 注意事项
+## 字典管理最佳实践
 
-1. **字典类型唯一**：dictType 在同一租户下必须唯一
-2. **删除顺序**：删除字典类型前需先删除关联的字典项
-3. **缓存同步**：字典变更后会自动刷新缓存，无需手动操作
-4. **命名规范**：建议使用大写下划线格式命名字典类型
+### 命名规范
+
+- **字典类型**：使用大写字母和下划线，如 `USER_STATUS`
+- **字典项**：使用有意义的编码，如 `ACTIVE`、`INACTIVE`
+
+### 字典设计原则
+
+1. **单一职责**：每个字典类型只管理一个业务领域
+2. **命名清晰**：字典类型和项的命名要清晰易懂
+3. **版本管理**：字典变更要进行版本管理
+4. **文档化**：重要字典要进行文档说明
+
+### 常见字典设计
+
+| 字典类型 | 用途 | 示例字典项 |
+|----------|------|------------|
+| USER_STATUS | 用户状态 | ACTIVE, INACTIVE, LOCKED |
+| ORDER_STATUS | 订单状态 | PENDING, PAID, SHIPPED, DELIVERED |
+| PAYMENT_TYPE | 支付方式 | ALIPAY, WECHAT, CREDIT_CARD |
+| PRODUCT_CATEGORY | 产品分类 | ELECTRONICS, CLOTHING, FOOD |
+| GENDER | 性别 | MALE, FEMALE, OTHER |
+| YES_NO | 是/否 | YES, NO |
+
+## 监控与日志
+
+### 缓存监控
+
+```java
+@RestController
+@RequestMapping("/monitor/dict")
+public class DictMonitorController {
+
+    @Autowired
+    private DictCache dictCache;
+
+    @GetMapping("/cache/status")
+    public R cacheStatus() {
+        Map<String, Object> status = new HashMap<>();
+        status.put("enabled", dictCache.isEnabled());
+        status.put("cacheSize", dictCache.getCacheSize());
+        status.put("lastRefreshTime", dictCache.getLastRefreshTime());
+        return R.ok(status);
+    }
+
+    @PostMapping("/cache/refresh")
+    public R refreshCache() {
+        dictCache.clearCache();
+        return R.ok("缓存刷新成功");
+    }
+}
+```
+
+### 日志配置
+
+在 `application.yml` 中配置字典服务日志：
+
+```yaml
+logging:
+  level:
+    com.wkclz.micro.dict: info
+    com.wkclz.micro.dict.cache: debug
+```
 
 ## 常见问题
 
-### Q: 字典修改后前端没有更新？
+### Q: 字典变更后多久生效？
 
-A: 检查以下几点：
-1. 后端缓存是否刷新（查看日志）
-2. 前端是否有缓存
-3. Redis 连接是否正常
+A: 字典变更后，缓存会在 30 秒内自动刷新，无需手动操作。
 
-### Q: 如何批量导入字典？
+### Q: 如何处理字典缓存与数据库不一致的问题？
 
-A: 使用 Copy/Paste 接口：
-1. 调用 Copy 接口导出字典
-2. 调用 Paste 接口导入字典
+A: 可以通过以下方式解决：
+1. 手动调用 `dictCache.clearCache()` 刷新缓存
+2. 等待缓存自动过期（默认 3600 秒）
+3. 重启服务
 
-### Q: 字典值支持什么类型？
+### Q: 如何优化大量字典的查询性能？
 
-A: 字典值（dictValue）存储为字符串类型，可以存储：
-- 数字字符串："1", "2", "3"
-- 字母字符串："MALE", "FEMALE"
-- 组合字符串："TYPE_A", "TYPE_B"
+A: 建议：
+1. 使用批量查询接口 `/common/dicts/list`
+2. 合理设置缓存参数
+3. 预加载常用字典
+4. 监控缓存命中率
 
-### Q: 如何实现字典排序？
+### Q: 字典服务支持集群部署吗？
 
-A: 通过 sort 字段控制排序，sort 值越小越靠前。
+A: 支持。通过 Redis 分布式通知机制，确保集群中所有节点的缓存一致性。
 
-### Q: 如何禁用某个字典项？
+## 扩展功能
 
-A: 设置 enableFlag = 0 即可禁用，前端查询时可以过滤禁用项。
+### 自定义字典加载器
+
+```java
+public interface DictLoader {
+    List<MdmDictItem> loadDict(String dictType);
+}
+
+@Component
+public class DatabaseDictLoader implements DictLoader {
+
+    @Autowired
+    private MdmDictItemService mdmDictItemService;
+
+    @Override
+    public List<MdmDictItem> loadDict(String dictType) {
+        return mdmDictItemService.getDictItemsByDictType(dictType);
+    }
+}
+
+// 可以扩展其他加载器，如从配置文件、远程服务等加载字典
+```
+
+### 字典导出导入
+
+```java
+@Service
+public class DictExportService {
+
+    @Autowired
+    private MdmDictService mdmDictService;
+    @Autowired
+    private MdmDictItemService mdmDictItemService;
+
+    // 导出字典为 JSON
+    public String exportDict(String dictType) {
+        MdmDict dict = mdmDictService.getByDictType(dictType);
+        List<MdmDictItem> items = mdmDictItemService.getDictItemsByDictType(dictType);
+
+        Map<String, Object> exportData = new HashMap<>();
+        exportData.put("dict", dict);
+        exportData.put("items", items);
+
+        return JsonUtil.toJson(exportData);
+    }
+
+    // 导入字典
+    public void importDict(String json) {
+        Map<String, Object> importData = JsonUtil.toMap(json);
+        MdmDict dict = JsonUtil.toBean(JsonUtil.toJson(importData.get("dict")), MdmDict.class);
+        List<MdmDictItem> items = JsonUtil.toList(JsonUtil.toJson(importData.get("items")), MdmDictItem.class);
+
+        // 保存字典类型
+        mdmDictService.saveOrUpdate(dict);
+
+        // 保存字典项
+        for (MdmDictItem item : items) {
+            mdmDictItemService.saveOrUpdate(item);
+        }
+    }
+}
+```

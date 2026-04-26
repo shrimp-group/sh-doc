@@ -1,13 +1,26 @@
 # 后端使用指南
 
-## 注入 FileApi
+## 注入 API
+
+### API 结构
 
 ```java
+// 上传 API
 @Autowired
-private FileApi fileApi;
+private FileUploadApi fileUploadApi;
+
+// 签名 API
+@Autowired
+private FileSignApi fileSignApi;
+
+// 删除 API
+@Autowired
+private FileDeleteApi fileDeleteApi;
 ```
 
 ## 文件上传
+
+使用 `FileUploadApi` 进行文件上传：
 
 ### 私有文件上传
 
@@ -15,13 +28,13 @@ private FileApi fileApi;
 
 ```java
 // 简单上传（使用默认 Bucket 和业务类型）
-MdmFileRecordDto dto = fileApi.upload(file);
+MdmFileRecordDto dto = fileUploadApi.upload(file);
 
 // 指定业务类型
-MdmFileRecordDto dto = fileApi.upload(file, "user_avatar");
+MdmFileRecordDto dto = fileUploadApi.upload(file, "user_avatar");
 
 // 指定业务类型和 Bucket
-MdmFileRecordDto dto = fileApi.upload(file, "user_avatar", "my-bucket");
+MdmFileRecordDto dto = fileUploadApi.upload(file, "user_avatar", "my-bucket");
 ```
 
 返回结果：
@@ -44,10 +57,10 @@ public class MdmFileRecordDto {
 
 ```java
 // 公有文件上传
-MdmFileRecordDto dto = fileApi.uploadPublic(file, "public_assets");
+MdmFileRecordDto dto = fileUploadApi.uploadPublic(file, "public_assets");
 
 // 指定 Bucket
-MdmFileRecordDto dto = fileApi.uploadPublic(file, "public_assets", "public-bucket");
+MdmFileRecordDto dto = fileUploadApi.uploadPublic(file, "public_assets", "public-bucket");
 ```
 
 **适用场景**：
@@ -57,19 +70,19 @@ MdmFileRecordDto dto = fileApi.uploadPublic(file, "public_assets", "public-bucke
 
 ## 文件签名访问
 
-私有文件需要通过签名 URL 才能访问，签名 URL 有过期时间。
+使用 `FileSignApi` 进行文件签名：
 
 ### 单文件签名
 
 ```java
 // 默认10分钟有效期
-String signedUrl = fileApi.sign(fileId);
+String signedUrl = fileSignApi.sign(fileId);
 
 // 自定义有效期（30分钟）
-String signedUrl = fileApi.sign(fileId, 30, TimeUnit.MINUTES);
+String signedUrl = fileSignApi.sign(fileId, 30, TimeUnit.MINUTES);
 
 // 自定义有效期（1小时）
-String signedUrl = fileApi.sign(fileId, 1, TimeUnit.HOURS);
+String signedUrl = fileSignApi.sign(fileId, 1, TimeUnit.HOURS);
 ```
 
 ### 批量文件签名
@@ -77,15 +90,15 @@ String signedUrl = fileApi.sign(fileId, 1, TimeUnit.HOURS);
 ```java
 // List 批量签名
 List<String> fileIds = Arrays.asList("file1", "file2", "file3");
-List<String> signedUrls = fileApi.sign(fileIds);
+List<String> signedUrls = fileSignApi.sign(fileIds);
 
 // 逗号分隔的文件ID签名
-String signedUrls = fileApi.signs("file1,file2,file3");
+String signedUrls = fileSignApi.signs("file1,file2,file3");
 // 返回: "url1,url2,url3"
 
 // 数组签名
 String[] fileIdArray = {"file1", "file2"};
-String[] signedUrlArray = fileApi.sign(fileIdArray);
+String[] signedUrlArray = fileSignApi.sign(fileIdArray);
 ```
 
 ### 对象属性签名
@@ -95,12 +108,12 @@ String[] signedUrlArray = fileApi.sign(fileIdArray);
 ```java
 // 单个对象签名
 User user = userService.getById(1L);
-fileApi.sign(user, User::getAvatar, User::setAvatarUrl);
+fileSignApi.sign(user, User::getAvatar, User::setAvatarUrl);
 // 执行后：user.getAvatarUrl() 得到签名后的 URL
 
 // 批量对象签名
 List<User> userList = userService.list();
-fileApi.sign(userList, User::getAvatar, User::setAvatarUrl);
+fileSignApi.sign(userList, User::getAvatar, User::setAvatarUrl);
 ```
 
 ### 富文本内容签名
@@ -113,7 +126,7 @@ String htmlContent = "<p>用户头像：<img src='user_avatar/20240115/a1b2c3d4.
                      "<p>订单截图：<img src='order_attach/20240115/e5f6g7h8.png'/></p>";
 
 // 签名替换
-String signedContent = fileApi.signContent(htmlContent);
+String signedContent = fileSignApi.signContent(htmlContent);
 
 // 结果：
 // <p>用户头像：<img src='https://xxx.aliyuncs.com/user_avatar/20240115/a1b2c3d4.jpg?OSSAccessKeyId=...'/></p>
@@ -125,23 +138,25 @@ String signedContent = fileApi.signContent(htmlContent);
 ```java
 // 根据 MdmFileRecord 对象签名
 MdmFileRecord fileRecord = fileRecordService.getById(1L);
-String signedUrl = fileApi.sign(fileRecord);
+String signedUrl = fileSignApi.sign(fileRecord);
 
 // 根据 MdmFileRecord 对象签名（自定义过期时间）
-String signedUrl = fileApi.sign(fileRecord, 30, TimeUnit.MINUTES);
+String signedUrl = fileSignApi.sign(fileRecord, 30, TimeUnit.MINUTES);
 
 // 批量签名
 List<MdmFileRecord> fileRecords = fileRecordService.list();
-List<String> signedUrls = fileApi.sign(fileRecords);
+List<String> signedUrls = fileSignApi.sign(fileRecords);
 ```
 
 ## 文件删除
+
+使用 `FileDeleteApi` 进行文件删除：
 
 ### 单文件删除
 
 ```java
 // 根据 fileId 删除
-Integer deletedCount = fileApi.delete("user_avatar/20240115/a1b2c3d4.jpg");
+Integer deletedCount = fileDeleteApi.delete("user_avatar/20240115/a1b2c3d4.jpg");
 
 // 删除时会同时：
 // 1. 从存储后端删除文件
@@ -156,7 +171,7 @@ List<String> fileIds = Arrays.asList(
     "user_avatar/20240115/a1b2c3d4.jpg",
     "user_avatar/20240115/e5f6g7h8.jpg"
 );
-Integer deletedCount = fileApi.delete(fileIds);
+Integer deletedCount = fileDeleteApi.delete(fileIds);
 ```
 
 ## Bucket 缓存管理
@@ -182,29 +197,31 @@ MdmFileBucket bucket = bucketCache.get("my-bucket");
 ```java
 @Service
 public class UserService {
-    
-    @Autowired
-    private FileApi fileApi;
+
     @Autowired
     private UserMapper userMapper;
-    
+    @Autowired
+    private FileSignApi fileSignApi;
+    @Autowired
+    private FileUploadApi fileUploadApi;
+
     /**
      * 上传用户头像
      */
     public String uploadAvatar(Long userId, MultipartFile file) {
         // 1. 上传文件
-        MdmFileRecordDto dto = fileApi.upload(file, "user_avatar");
-        
+        MdmFileRecordDto dto = fileUploadApi.upload(file, "user_avatar");
+
         // 2. 更新用户头像
         User user = new User();
         user.setId(userId);
         user.setAvatar(dto.getFileId());
         userMapper.updateById(user);
-        
+
         // 3. 返回预览 URL
         return dto.getPreviewUrl();
     }
-    
+
     /**
      * 获取用户信息（包含签名后的头像 URL）
      */
@@ -212,16 +229,16 @@ public class UserService {
         User user = userMapper.selectById(userId);
         UserVo vo = new UserVo();
         BeanUtils.copyProperties(user, vo);
-        
+
         // 签名头像 URL
         if (StringUtils.isNotBlank(user.getAvatar())) {
-            String avatarUrl = fileApi.sign(user.getAvatar());
+            String avatarUrl = fileSignApi.sign(user.getAvatar());
             vo.setAvatarUrl(avatarUrl);
         }
-        
+
         return vo;
     }
-    
+
     /**
      * 批量获取用户信息（批量签名头像）
      */
@@ -234,10 +251,10 @@ public class UserService {
                 return vo;
             })
             .collect(Collectors.toList());
-        
+
         // 批量签名头像
-        fileApi.sign(vos, UserVo::getAvatar, UserVo::setAvatarUrl);
-        
+        fileSignApi.sign(vos, UserVo::getAvatar, UserVo::setAvatarUrl);
+
         return vos;
     }
 }
@@ -248,12 +265,14 @@ public class UserService {
 ```java
 @Service
 public class ArticleService {
-    
+
     @Autowired
-    private FileApi fileApi;
+    private FileUploadApi fileUploadApi;
+    @Autowired
+    private FileSignApi fileSignApi;
     @Autowired
     private ArticleMapper articleMapper;
-    
+
     /**
      * 保存文章（处理内容中的文件）
      */
@@ -261,7 +280,7 @@ public class ArticleService {
         // 保存原始内容（存储 fileId）
         articleMapper.insert(article);
     }
-    
+
     /**
      * 获取文章（返回签名后的内容）
      */
@@ -269,11 +288,11 @@ public class ArticleService {
         Article article = articleMapper.selectById(id);
         ArticleVo vo = new ArticleVo();
         BeanUtils.copyProperties(article, vo);
-        
+
         // 对内容中的文件 URL 进行签名
-        String signedContent = fileApi.signContent(article.getContent());
+        String signedContent = fileSignApi.signContent(article.getContent());
         vo.setContent(signedContent);
-        
+
         return vo;
     }
 }
