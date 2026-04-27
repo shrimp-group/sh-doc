@@ -36,10 +36,14 @@ export default withMermaid({
           {text: '框架概述', link: '/framework/'},
           {text: 'Parent 父工程', link: '/framework/parent'},
           {text: 'BOM 物料清单', link: '/framework/bom'},
+          {text: 'Tool 工具模块', link: '/framework/tool'},
           {text: 'Core 核心模块', link: '/framework/core'},
           {text: 'ORM 持久框架', link: '/framework/orm'},
           {text: 'Redis 缓存', link: '/framework/redis'},
+          {text: 'Web 增强模块', link: '/framework/web'},
+          {text: 'MQTT 消息队列', link: '/framework/mqtt'},
           {text: 'Spring 偶合器', link: '/framework/spring'},
+          {text: 'DynamicDB 动态数据源', link: '/framework/dynamicdb'},
         ]
       },
       {
@@ -115,9 +119,12 @@ export default withMermaid({
             {text: '框架为何物', link: '/framework/'},
             {text: 'Parent 父工程', link: '/framework/parent'},
             {text: 'BOM 物料清单', link: '/framework/bom'},
+            {text: 'Tool 工具模块', link: '/framework/tool'},
             {text: 'Core 核心模块', link: '/framework/core'},
             {text: 'ORM 持久框架', link: '/framework/orm'},
             {text: 'Redis 缓存', link: '/framework/redis'},
+            {text: 'Web 增强模块', link: '/framework/web'},
+            {text: 'MQTT 消息队列', link: '/framework/mqtt'},
             {text: 'Spring 偶合器', link: '/framework/spring'},
           ]
         },
