@@ -30,46 +30,9 @@ export default withMermaid({
     },
     nav: [
       {text: 'Home', link: '/'},
-      {
-        text: '框架',
-        items: [
-          {text: '框架概述', link: '/framework/'},
-          {text: 'Parent 父工程', link: '/framework/parent'},
-          {text: 'BOM 物料清单', link: '/framework/bom'},
-          {text: 'Tool 工具模块', link: '/framework/tool'},
-          {text: 'Core 核心模块', link: '/framework/core'},
-          {text: 'ORM 持久框架', link: '/framework/orm'},
-          {text: 'Redis 缓存', link: '/framework/redis'},
-          {text: 'Web 增强模块', link: '/framework/web'},
-          {text: 'MQTT 消息队列', link: '/framework/mqtt'},
-          {text: 'Spring 偶合器', link: '/framework/spring'},
-          {text: 'DynamicDB 动态数据源', link: '/framework/dynamicdb'},
-        ]
-      },
-      {
-        text: '权限',
-        items: [
-          {text: '概述', link: '/auth/'},
-          {text: '管理后台', link: '/auth/iam-admin'},
-          {text: '后台启动器', link: '/auth/iam-admin-starter'},
-          {text: '后台界面', link: '/auth/iam-admin-ui'},
-          {text: '公共模块', link: '/auth/iam-common'},
-          {text: '开发套件', link: '/auth/iam-sdk'},
-          {text: '单点登录', link: '/auth/iam-sso'},
-          {text: '登录启动器', link: '/auth/iam-sso-starter'},
-          {text: '登录界面', link: '/auth/iam-sso-ui'},
-        ]
-      },
-      {
-        text: '代码生成',
-        items: [
-          {text: '概述', link: '/generator/'},
-          {text: '客户端', link: '/generator/generator-client'},
-          {text: '服务端', link: '/generator/generator-server'},
-          {text: '服务启动器', link: '/generator/generator-server-starter'},
-          {text: '生成器界面', link: '/generator/generator-ui'},
-        ]
-      },
+      {text: '框架', link: '/framework/'},
+      {text: '权限', link: '/auth/'},
+      {text: '代码生成', link: '/generator/'},
       {
         text: '微模块',
         items: [
@@ -79,7 +42,7 @@ export default withMermaid({
           {text: '文件服务', link: '/micro/micro-file/'},
           {text: '表单服务', link: '/micro/micro-form'},
           {text: '函数服务', link: '/micro/micro-fun'},
-          {text: 'K8s 服务', link: '/micro/micro-k8s'},
+          {text: 'K8s服务', link: '/micro/micro-k8s'},
           {text: '规则引擎', link: '/micro/micro-liteflow'},
           {text: '脱敏服务', link: '/micro/micro-mask'},
           {text: '消息服务', link: '/micro/micro-msg'},
@@ -91,16 +54,7 @@ export default withMermaid({
           {text: '微信公众号', link: '/micro/micro-wxmp'},
         ]
       },
-      {
-        text: '商城',
-        items: [
-          {text: '概述', link: '/mall/'},
-          {text: '订单管理', link: '/mall/oms-admin'},
-          {text: '订单服务', link: '/mall/oms-admin-starter'},
-          {text: '商品管理', link: '/mall/pms-admin'},
-          {text: '商品服务', link: '/mall/pms-admin-starter'},
-        ]
-      },
+      {text: '商城', link: '/mall/'},
       {
         text: '关于',
         items: [
@@ -116,7 +70,7 @@ export default withMermaid({
         {
           text: '框架',
           items: [
-            {text: '框架为何物', link: '/framework/'},
+            {text: '概述', link: '/framework/'},
             {text: 'Parent 父工程', link: '/framework/parent'},
             {text: 'BOM 物料清单', link: '/framework/bom'},
             {text: 'Tool 工具模块', link: '/framework/tool'},
@@ -133,86 +87,31 @@ export default withMermaid({
       '/auth/': [
         {
           text: '权限',
-          items: [{text: '概述', link: '/auth/'}]
-        },
+          items: [
+            {text: '概述', link: '/auth/'},
+            {text: '管理后台', link: '/auth/iam-admin'},
+            {text: '后台启动器', link: '/auth/iam-admin-starter'},
+            {text: '后台界面', link: '/auth/iam-admin-ui'},
+            {text: '公共模块', link: '/auth/iam-common'},
+            {text: '开发套件', link: '/auth/iam-sdk'},
+            {text: '单点登录', link: '/auth/iam-sso'},
+            {text: '登录启动器', link: '/auth/iam-sso-starter'},
+            {text: '登录界面', link: '/auth/iam-sso-ui'}
+          ]
+        }
       ],
-      '/auth/iam-admin': [
-        {
-          text: '权限',
-          items: [{text: '管理后台', link: '/auth/iam-admin'}]
-        },
-      ],
-      '/auth/iam-admin-starter': [
-        {
-          text: '权限',
-          items: [{text: '后台启动器', link: '/auth/iam-admin-starter'}]
-        },
-      ],
-      '/auth/iam-admin-ui': [
-        {
-          text: '权限',
-          items: [{text: '后台界面', link: '/auth/iam-admin-ui'}]
-        },
-      ],
-      '/auth/iam-common': [
-        {
-          text: '权限',
-          items: [{text: '公共模块', link: '/auth/iam-common'}]
-        },
-      ],
-      '/auth/iam-sdk': [
-        {
-          text: '权限',
-          items: [{text: '开发套件', link: '/auth/iam-sdk'}]
-        },
-      ],
-      '/auth/iam-sso': [
-        {
-          text: '权限',
-          items: [{text: '单点登录', link: '/auth/iam-sso'}]
-        },
-      ],
-      '/auth/iam-sso-starter': [
-        {
-          text: '权限',
-          items: [{text: '登录启动器', link: '/auth/iam-sso-starter'}]
-        },
-      ],
-      '/auth/iam-sso-ui': [
-        {
-          text: '权限',
-          items: [{text: '登录界面', link: '/auth/iam-sso-ui'}]
-        },
-      ],
+
       // 代码生成 - 每个页面独立 sidebar
       '/generator/': [
         {
           text: '代码生成',
-          items: [{text: '概述', link: '/generator/'}]
-        },
-      ],
-      '/generator/generator-client': [
-        {
-          text: '代码生成',
-          items: [{text: '客户端', link: '/generator/generator-client'}]
-        },
-      ],
-      '/generator/generator-server': [
-        {
-          text: '代码生成',
-          items: [{text: '服务端', link: '/generator/generator-server'}]
-        },
-      ],
-      '/generator/generator-server-starter': [
-        {
-          text: '代码生成',
-          items: [{text: '服务启动器', link: '/generator/generator-server-starter'}]
-        },
-      ],
-      '/generator/generator-ui': [
-        {
-          text: '代码生成',
-          items: [{text: '生成器界面', link: '/generator/generator-ui'}]
+          items: [
+            {text: '概述', link: '/generator/'},
+            {text: '客户端', link: '/generator/generator-client'},
+            {text: '服务端', link: '/generator/generator-server'},
+            {text: '服务启动器', link: '/generator/generator-server-starter'},
+            {text: '生成器界面', link: '/generator/generator-ui'}
+          ]
         },
       ],
       // 微模块 - 每个页面独立 sidebar
@@ -331,31 +230,13 @@ export default withMermaid({
       '/mall/': [
         {
           text: '商城',
-          items: [{text: '概述', link: '/mall/'}]
-        },
-      ],
-      '/mall/oms-admin': [
-        {
-          text: '商城',
-          items: [{text: '订单管理', link: '/mall/oms-admin'}]
-        },
-      ],
-      '/mall/oms-admin-starter': [
-        {
-          text: '商城',
-          items: [{text: '订单服务', link: '/mall/oms-admin-starter'}]
-        },
-      ],
-      '/mall/pms-admin': [
-        {
-          text: '商城',
-          items: [{text: '商品管理', link: '/mall/pms-admin'}]
-        },
-      ],
-      '/mall/pms-admin-starter': [
-        {
-          text: '商城',
-          items: [{text: '商品服务', link: '/mall/pms-admin-starter'}]
+          items: [
+            {text: '概述', link: '/mall/'},
+            {text: '订单管理', link: '/mall/oms-admin'},
+            {text: '订单服务', link: '/mall/oms-admin-starter'},
+            {text: '商品管理', link: '/mall/pms-admin'},
+            {text: '商品服务', link: '/mall/pms-admin-starter'}
+          ]
         },
       ],
     },
