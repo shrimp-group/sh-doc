@@ -85,7 +85,7 @@ Parent POM 主要提供以下功能：
     <artifactId>my-parent</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
-    
+
     <!-- 公共配置 -->
 </project>
 ```
@@ -102,7 +102,7 @@ Parent POM 主要提供以下功能：
         <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    
+
     <artifactId>my-child-module</artifactId>
     <!-- 子模块特有配置 -->
 </project>
@@ -173,7 +173,7 @@ root-parent (最基础配置)
 <!-- sh-core/pom.xml -->
 <project>
     <modelVersion>4.0.0</modelVersion>
-    
+
     <!-- 继承 sh-parent -->
     <parent>
         <groupId>com.wkclz.framework</groupId>
@@ -181,9 +181,9 @@ root-parent (最基础配置)
         <version>5.0.0-SNAPSHOT</version>
         <relativePath>../sh-parent/pom.xml</relativePath>
     </parent>
-    
+
     <artifactId>sh-core</artifactId>
-    
+
     <dependencies>
         <!-- 无需指定版本，版本由 sh-bom 统一管理 -->
         <dependency>
@@ -204,18 +204,18 @@ root-parent (最基础配置)
 <!-- 业务项目 pom.xml -->
 <project>
     <modelVersion>4.0.0</modelVersion>
-    
+
     <!-- 继承 sh-parent -->
     <parent>
         <groupId>com.wkclz.framework</groupId>
         <artifactId>sh-parent</artifactId>
         <version>5.0.0-SNAPSHOT</version>
     </parent>
-    
+
     <groupId>com.example</groupId>
     <artifactId>my-business-app</artifactId>
     <version>1.0.0</version>
-    
+
     <dependencies>
         <!-- 使用 sh-framework 组件 -->
         <dependency>
@@ -230,7 +230,7 @@ root-parent (最基础配置)
             <groupId>com.wkclz.framework</groupId>
             <artifactId>sh-redis</artifactId>
         </dependency>
-        
+
         <!-- 使用微服务模块 -->
         <dependency>
             <groupId>com.wkclz.microapp</groupId>
@@ -248,7 +248,7 @@ root-parent (最基础配置)
 
 ### 框架核心模块
 - `sh-tool`：工具模块
-- `sh-core`：核心模块  
+- `sh-core`：核心模块
 - `sh-mybatis`：ORM 模块
 - `sh-dynamicdb`：动态数据源
 - `sh-redis`：缓存模块
@@ -280,15 +280,15 @@ root-parent (最基础配置)
 <properties>
     <!-- 项目版本 -->
     <revision>5.0.0-SNAPSHOT</revision>
-    
+
     <!-- Java 配置 -->
     <maven.compiler.source>25</maven.compiler.source>
     <maven.compiler.target>25</maven.compiler.target>
     <maven.compiler.release>25</maven.compiler.release>
-    
+
     <!-- 编码配置 -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    
+
     <!-- 插件版本 -->
     <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
 </properties>
@@ -306,14 +306,14 @@ root-parent (最基础配置)
             <type>pom</type>
             <scope>import</scope>
         </dependency>
-        
+
         <!-- 管理框架模块版本 -->
         <dependency>
             <groupId>com.wkclz.framework</groupId>
             <artifactId>sh-core</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
         <!-- 管理微服务模块版本 -->
         <dependency>
             <groupId>com.wkclz.microapp</groupId>
@@ -357,8 +357,8 @@ root-parent (最基础配置)
 ```xml
 <properties>
     <!-- 覆盖 Java 版本 -->
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.source>25</maven.compiler.source>
+    <maven.compiler.target>25</maven.compiler.target>
 </properties>
 
 <build>

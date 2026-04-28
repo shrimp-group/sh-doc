@@ -74,7 +74,7 @@ public class SensorDataSender {
         Map<String, Object> data = new HashMap<>();
         data.put("value", 25.5);
         data.put("timestamp", System.currentTimeMillis());
-        
+
         mqttProducer.send("sensor/temperature", data, Qos.QOS_1);
     }
 }
@@ -240,9 +240,9 @@ shrimp:
 @Slf4j
 @MqttController("iot")
 public class IotMessageHandler {
-    
+
     private final ExecutorService executor = Executors.newFixedThreadPool(10);
-    
+
     @MqttTopicMapping("sensor/#")
     public void handleSensorData(MqttHexMsg msg) {
         executor.submit(() -> {
@@ -263,7 +263,7 @@ public class IotMessageHandler {
 @Slf4j
 @MqttController("system")
 public class SystemMessageHandler {
-    
+
     @MqttTopicMapping("error")
     public void handleError(MqttHexMsg msg) {
         try {
@@ -344,7 +344,7 @@ curl http://localhost:8080/actuator/health
 
 组件实现 `MqttCallbackExtended` 接口，在连接断开时自动重连，重连成功后重新订阅 Topic。
 
-## 版本历史
+## 📝 版本历史
 
 ### v1.0.0 (初始版本)
 - 基础 MQTT 客户端功能

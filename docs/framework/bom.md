@@ -93,12 +93,12 @@
         <groupId>cn.hutool</groupId>
         <artifactId>hutool-all</artifactId>
     </dependency>
-    
+
     <dependency>
         <groupId>com.alibaba.fastjson2</groupId>
         <artifactId>fastjson2</artifactId>
     </dependency>
-    
+
     <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
@@ -273,13 +273,13 @@ graph TB
     A[sh-parent] --> B[sh-bom]
     B --> C[Spring Boot BOM]
     B --> D[第三方依赖版本]
-    
+
     E[sh-core] --> A
     F[sh-mybatis] --> A
     G[sh-redis] --> A
-    
-    H[业务项目] --> A
-    I[微服务] --> A
+
+    H[微服务] --> A
+    I[业务项目] --> A
 ```
 
 ### 版本控制流程
@@ -291,7 +291,7 @@ sequenceDiagram
     parent CI as CI/CD
     participant Test as 测试环境
     participant Prod as 生产环境
-    
+
     Dev->>BOM: 更新依赖版本
     BOM->>CI: 触发构建
     CI->>Test: 部署测试
