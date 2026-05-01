@@ -107,6 +107,10 @@ export default withMermaid({
           text: '代码生成',
           items: [
             {text: '概述', link: '/generator/'},
+            {text: '数据源维护', link: '/generator/datasource'},
+            {text: '模板维护', link: '/generator/template'},
+            {text: '项目维护', link: '/generator/project'},
+            {text: '项目接入及使用方法', link: '/generator/usage'},
             {text: '客户端', link: '/generator/generator-client'},
             {text: '服务端', link: '/generator/generator-server'},
             {text: '服务启动器', link: '/generator/generator-server-starter'},
