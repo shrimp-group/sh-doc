@@ -261,7 +261,7 @@ public class ${table.entityName} {
 创建好模板后，您可以：
 1. [创建项目](./project.md) - 将模板和数据源组织起来
 2. [配置任务](./project.md#任务配置) - 定义生成规则
-3. [生成代码](../usage.md) - 开始生成代码
+3. [生成代码](./usage.md) - 开始生成代码
 
 ---
 

@@ -56,9 +56,9 @@ java -jar generator-server-starter.jar --spring.config.location=application.yml
 
 服务启动后，访问以下地址：
 
-- **管理界面**：http://localhost:8080
-- **API文档**：http://localhost:8080/swagger-ui.html
-- **健康检查**：http://localhost:8080/actuator/health
+- **管理界面**：`http://localhost:8080`（请将 `localhost` 替换为实际服务器地址）
+- **API文档**：`http://localhost:8080/swagger-ui.html`（请将 `localhost` 替换为实际服务器地址）
+- **健康检查**：`http://localhost:8080/actuator/health`（请将 `localhost` 替换为实际服务器地址）
 
 ### 4. 初始登录
 

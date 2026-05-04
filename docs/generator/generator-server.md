@@ -435,7 +435,6 @@ A: 定期备份数据库和模板文件。
 ## 相关资源
 
 - [GitHub仓库](https://github.com/shrimp-group/sh-generator)
-- [API文档](../../api/generator/)
 - [示例项目](https://github.com/shrimp-group/sh-generator-examples)
 
 ---
