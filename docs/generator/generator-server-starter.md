@@ -423,13 +423,13 @@ logrotate -f /etc/logrotate.d/generator
 
 ```bash
 # 健康检查
-curl http://localhost:8080/actuator/health
+curl http://<server>:8080/actuator/health
 
 # 性能指标
-curl http://localhost:8080/actuator/metrics
+curl http://<server>:8080/actuator/metrics
 
 # Prometheus指标
-curl http://localhost:8080/actuator/prometheus
+curl http://<server>:8080/actuator/prometheus
 ```
 
 ## 使用示例
@@ -530,7 +530,7 @@ server:
 ### 1. 日常维护
 ```bash
 # 检查服务状态
-curl -f http://localhost:8080/actuator/health
+curl -f http://<server>:8080/actuator/health
 
 # 查看磁盘空间
 df -h
@@ -562,8 +562,6 @@ du -sh logs/
 
 - [GitHub仓库](https://github.com/shrimp-group/sh-generator)
 - [Docker镜像](https://hub.docker.com/r/shrimp/generator-server)
-- [API文档](../../api/generator/)
-- [更新日志](../../changelog/generator.md)
 
 ---
 
