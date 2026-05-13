@@ -82,6 +82,8 @@ export default withMermaid({
             {text: '文档规范', link: '/standard/document'},
             {text: '架构规范', link: '/standard/architecture'},
             {text: '日志规范', link: '/standard/logging'},
+            {text: 'AI编程范式', link: '/standard/ai-paradigm'},
+            {text: 'AI编程实践', link: '/standard/ai-practice'},
           ]
         },
       ],
