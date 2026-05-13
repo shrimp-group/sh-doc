@@ -30,6 +30,7 @@ export default withMermaid({
     },
     nav: [
       {text: 'Home', link: '/'},
+      {text: '规范', link: '/standard/'},
       {text: '框架', link: '/framework/'},
       {text: '权限', link: '/auth/'},
       {text: '代码生成', link: '/generator/'},
@@ -65,6 +66,25 @@ export default withMermaid({
 
     ],
     sidebar: {
+      // 规范 - 每个页面独立 sidebar
+      '/standard/': [
+        {
+          text: '规范',
+          items: [
+            {text: '概述', link: '/standard/'},
+            {text: '前端规范', link: '/standard/frontend'},
+            {text: '后端规范', link: '/standard/backend'},
+            {text: '数据库规范', link: '/standard/database'},
+            {text: 'Git 规范', link: '/standard/git'},
+            {text: '运维规范', link: '/standard/ops'},
+            {text: 'API 规范', link: '/standard/api'},
+            {text: '安全规范', link: '/standard/security'},
+            {text: '文档规范', link: '/standard/document'},
+            {text: '架构规范', link: '/standard/architecture'},
+            {text: '日志规范', link: '/standard/logging'},
+          ]
+        },
+      ],
       // 框架 - 每个页面独立 sidebar
       '/framework/': [
         {
