@@ -32,7 +32,6 @@ Bucket 配置存储在 `mdm_fileos_bucket` 数据库表中，通过 REST API 管
 | `access_key` | varchar(255) | 是 | OSS 访问 Access Key |
 | `secret_key` | varchar(255) | 是 | OSS 访问 Secret Key |
 | `default_flag` | int | 否 | 默认标识，`1` 表示默认 Bucket，上传时未指定 Bucket 将使用默认 Bucket |
-| `system` | varchar(63) | 否 | 系统标识，用于区分不同业务系统 |
 
 ---
 
@@ -53,10 +52,9 @@ curl -X POST http://localhost:8080/micro-fileos/bucket/create \
     "endpointInner": "https://oss-cn-hangzhou-internal.aliyuncs.com",
     "endpointOuter": "https://oss-cn-hangzhou.aliyuncs.com",
     "region": "cn-hangzhou",
-    "accessKey": "LTAI5tXXXXXXXXXXXXXX",
-    "secretKey": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "defaultFlag": 1,
-    "system": "main"
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 1
   }'
 ```
 
@@ -127,10 +125,9 @@ curl -X POST http://localhost:8080/micro-fileos/bucket/create \
     "endpointInner": null,
     "endpointOuter": "https://s3.us-east-1.amazonaws.com",
     "region": "us-east-1",
-    "accessKey": "AKIAIOSFODNN7EXAMPLE",
-    "secretKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-    "defaultFlag": 1,
-    "system": "main"
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 1
   }'
 ```
 
@@ -193,8 +190,8 @@ curl -X POST http://localhost:8080/micro-fileos/bucket/create \
     "endpointInner": "http://minio:9000",
     "endpointOuter": "http://192.168.1.100:9000",
     "region": "us-east-1",
-    "accessKey": "minioadmin",
-    "secretKey": "minioadmin",
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
     "defaultFlag": 1,
     "system": "dev"
   }'
@@ -253,10 +250,9 @@ curl -X POST http://localhost:8080/micro-fileos/bucket/create \
     "endpointInner": "https://oss-cn-hangzhou-internal.aliyuncs.com",
     "endpointOuter": "https://oss-cn-hangzhou.aliyuncs.com",
     "region": "cn-hangzhou",
-    "accessKey": "LTAI5tXXXXXXXXXXXXXX",
-    "secretKey": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "defaultFlag": 1,
-    "system": "main"
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 1
   }'
 
 # 视频 Bucket — AWS S3（大文件存储）
@@ -267,10 +263,9 @@ curl -X POST http://localhost:8080/micro-fileos/bucket/create \
     "ossSp": "AWS_S3",
     "endpointOuter": "https://s3.us-east-1.amazonaws.com",
     "region": "us-east-1",
-    "accessKey": "AKIAIOSFODNN7EXAMPLE",
-    "secretKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-    "defaultFlag": 0,
-    "system": "main"
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 0
   }'
 
 # 开发 Bucket — MinIO（本地开发测试）
@@ -282,8 +277,8 @@ curl -X POST http://localhost:8080/micro-fileos/bucket/create \
     "endpointInner": "http://minio:9000",
     "endpointOuter": "http://localhost:9000",
     "region": "us-east-1",
-    "accessKey": "minioadmin",
-    "secretKey": "minioadmin",
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
     "defaultFlag": 0,
     "system": "dev"
   }'

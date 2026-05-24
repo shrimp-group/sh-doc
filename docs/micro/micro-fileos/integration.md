@@ -31,7 +31,6 @@ CREATE TABLE `mdm_fileos_bucket` (
   `access_key`      varchar(255) NOT NULL COMMENT 'Access Key',
   `secret_key`      varchar(255) NOT NULL COMMENT 'Secret Key',
   `default_flag`    int          DEFAULT 0  COMMENT '默认标识(1=默认Bucket)',
-  `system`          varchar(63)  DEFAULT NULL COMMENT '系统标识',
   `sort`            int          DEFAULT 0  COMMENT '排序',
   `create_time`     datetime     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `create_by`       varchar(31)  DEFAULT NULL COMMENT '创建人',
@@ -229,8 +228,7 @@ curl -X POST http://localhost:8080/micro-fileos/bucket/create \
     "region": "cn-hangzhou",
     "accessKey": "your-access-key",
     "secretKey": "your-secret-key",
-    "defaultFlag": 1,
-    "system": "main"
+    "defaultFlag": 1
   }'
 ```
 

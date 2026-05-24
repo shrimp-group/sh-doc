@@ -96,12 +96,12 @@
 文件在存储后端中的路径格式：
 
 ```
-{system}/{env}/{category}/{date}/[public/]{timestamp}_{seq}_{safeFilename}
+{system}/{env}/{category}/{date}/[public/]{timestamp}_{safeFilename}
 
 示例：
-sh-fileos/prod/avatar/20240115/1705300000000_0_a1b2c3d4.jpg
-sh-fileos/prod/order_attach/20240115/1705300000000_1_e5f6g7h8.pdf
-sh-fileos/prod/logo/20240115/public/1705300000000_0_i9j0k1l2.png
+sh-fileos/prod/avatar/20240115/1705300000000_a1b2c3d4.jpg
+sh-fileos/prod/order_attach/20240115/1705300000000_e5f6g7h8.pdf
+sh-fileos/prod/logo/20240115/public/1705300000000_i9j0k1l2.png
 ```
 
 - **system**：系统标识
@@ -109,7 +109,6 @@ sh-fileos/prod/logo/20240115/public/1705300000000_0_i9j0k1l2.png
 - **category**：业务类型，用于分类管理
 - **date**：上传日期，便于按时间归档
 - **timestamp**：时间戳
-- **seq**：序号
 - **safeFilename**：安全的文件名
 - **public/**：可选前缀，公有文件会添加此前缀
 
