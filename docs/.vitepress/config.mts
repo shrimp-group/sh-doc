@@ -40,7 +40,7 @@ export default withMermaid({
           {text: '概述', link: '/micro/'},
           {text: '审计服务', link: '/micro/micro-audit'},
           {text: '字典服务', link: '/micro/micro-dict/'},
-          {text: '文件服务', link: '/micro/micro-file/'},
+          {text: '文件服务', link: '/micro/micro-fileos/'},
           {text: '表单服务', link: '/micro/micro-form'},
           {text: '函数服务', link: '/micro/micro-fun'},
           {text: 'K8s服务', link: '/micro/micro-k8s'},
@@ -166,17 +166,17 @@ export default withMermaid({
           ]
         },
       ],
-      '/micro/micro-file/': [
+      '/micro/micro-fileos/': [
         {
           text: '文件服务',
           items: [
-            {text: '概述', link: '/micro/micro-file/'},
-            {text: '设计思路', link: '/micro/micro-file/design'},
-            {text: '功能集成', link: '/micro/micro-file/integration'},
-            {text: '服务商', link: '/micro/micro-file/storage-providers'},
-            {text: '后端使用', link: '/micro/micro-file/backend-usage'},
-            {text: '前端使用', link: '/micro/micro-file/frontend-usage'},
-            {text: '高级配置', link: '/micro/micro-file/advanced'},
+            {text: '概述', link: '/micro/micro-fileos/'},
+            {text: '设计思路', link: '/micro/micro-fileos/design'},
+            {text: '功能集成', link: '/micro/micro-fileos/integration'},
+            {text: '服务商', link: '/micro/micro-fileos/storage-providers'},
+            {text: '后端使用', link: '/micro/micro-fileos/backend-usage'},
+            {text: '前端使用', link: '/micro/micro-fileos/frontend-usage'},
+            {text: '配置指南', link: '/micro/micro-fileos/configuration'},
           ]
         },
       ],
