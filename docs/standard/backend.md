@@ -46,8 +46,8 @@ backend/                              # Maven 父工程
 │   │       │   └── OrderMapper.java
 │   │       ├── model/                # 数据模型
 │   │       │   ├── entity/           # 数据库实体
-│   │       │   ├── dto/              # 数据传输对象
-│   │       │   └── vo/               # 视图对象
+│   │       │   ├── req/              # 请求对象
+│   │       │   └── resp/             # 响应对象
 │   │       ├── rest/                 # REST 控制层
 │   │       ├── service/              # 业务逻辑层
 │   │       ├── util/                 # 工具类
@@ -77,8 +77,8 @@ backend/                              # Maven 父工程
 | interceptor | 拦截器 | 请求拦截、权限校验、日志记录 |
 | mapper | 数据访问层 | MyBatis Mapper 接口 |
 | model/entity | 数据库实体 | 与数据库表直接映射的实体类 |
-| model/dto | 数据传输对象 | 请求和响应的数据结构 |
-| model/vo | 视图对象 | 面向视图层的数据结构 |
+| model/req | 请求对象 | 接收前端请求参数的数据结构 |
+| model/resp | 响应对象 | 返回给前端响应结果的数据结构 |
 | rest | REST 控制层 | REST API 控制器，处理 HTTP 请求 |
 | service | 业务逻辑层 | 业务接口定义和实现 |
 | util | 工具类 | 通用工具方法，如加密、日期处理 |
@@ -184,22 +184,16 @@ model/
 ├── entity/           # 数据库实体，与表结构一一对应
 │   ├── UserEntity.java
 │   └── OrderEntity.java
-├── dto/              # 数据传输对象
-│   ├── request/      # 请求参数对象
-│   │   ├── UserCreateRequest.java
-│   │   ├── UserUpdateRequest.java
-│   │   ├── UserQueryRequest.java
-│   │   └── OrderCreateRequest.java
-│   └── response/     # 响应结果对象
-│       ├── UserResponse.java
-│       ├── UserDetailResponse.java
-│       ├── OrderResponse.java
-│       └── PageResponse.java
-└── vo/               # 视图对象，用于前端展示
-    ├── UserVO.java
-    ├── UserSimpleVO.java
-    ├── OrderVO.java
-    └── DashboardVO.java
+├── req/              # 请求对象，接收前端请求参数
+│   ├── UserCreateReq.java
+│   ├── UserUpdateReq.java
+│   ├── UserQueryReq.java
+│   └── OrderCreateReq.java
+└── resp/             # 响应对象，返回给前端的数据
+    ├── UserResp.java
+    ├── UserDetailResp.java
+    ├── OrderResp.java
+    └── PageResp.java
 ```
 
 ### Entity（实体类）
@@ -233,34 +227,92 @@ public class UserEntity {
 }
 ```
 
-### DTO（数据传输对象）
+### Req（请求对象）
 
-| 类型 | 说明 | 示例 |
-|------|------|------|
-| Request | 接收前端请求参数 | `UserCreateRequest`、`UserQueryRequest` |
-| Response | 返回给前端的数据 | `UserResponse`、`PageResponse` |
-
-#### Request 对象规范
+请求对象用于接收前端传入的参数，统一存放在 `model/req` 包下。
 
 | 类型 | 说明 | 使用场景 |
 |------|------|----------|
-| XxxCreateRequest | 创建请求 | 新增数据时使用 |
-| XxxUpdateRequest | 更新请求 | 修改数据时使用 |
-| XxxQueryRequest | 查询请求 | 分页列表、详情查询时使用 |
-| XxxBatchRequest | 批量操作请求 | 批量删除、批量更新时使用 |
+| XxxCreateReq | 创建请求 | 新增数据时使用 |
+| XxxUpdateReq | 更新请求 | 修改数据时使用 |
+| XxxQueryReq | 查询请求 | 分页列表、详情查询时使用 |
+| XxxBatchReq | 批量操作请求 | 批量删除、批量更新时使用 |
 
-#### Response 对象规范
+**Req 对象命名规范：**
+- 类名以 `Req` 结尾，如 `UserCreateReq`
+- 统一放在 `model/req` 包下
+- 必须添加参数校验注解
+
+**Req 对象继承规范：**
+
+请求对象应优先继承 sh-web 提供的基础类：
+
+| 基础类 | 包路径 | 适用场景 |
+|--------|--------|----------|
+| `IdReq` | `com.wkclz.web.bean.IdReq` | 根据ID查询详情 |
+| `PageReq` | `com.wkclz.web.bean.PageReq` | 分页查询 |
+| `UpdateReq` | `com.wkclz.web.bean.UpdateReq` | 更新操作（含乐观锁） |
+| `RemoveReq` | `com.wkclz.web.bean.RemoveReq` | 删除操作（支持批量） |
+
+**示例：**
+```java
+import com.wkclz.web.bean.UpdateReq;
+import jakarta.validation.constraints.NotBlank;
+
+@Data
+public class UserUpdateReq extends UpdateReq {
+
+    @NotBlank(message = "用户名不能为空")
+    private String username;
+
+    private String email;
+
+    private String phone;
+}
+```
+
+### Resp（响应对象）
+
+响应对象用于返回给前端的数据，统一存放在 `model/resp` 包下。
 
 | 类型 | 说明 | 使用场景 |
 |------|------|----------|
-| XxxResponse | 单个对象响应 | 详情接口 |
-| XxxListResponse | 列表响应 | 列表接口（不带分页） |
-| PageResponse | 分页响应 | 分页接口 |
+| XxxResp | 单个对象响应 | 详情接口 |
+| XxxListResp | 列表响应 | 列表接口（不带分页） |
+| PageResp | 分页响应 | 分页接口 |
+
+**Resp 对象命名规范：**
+- 类名以 `Resp` 结尾，如 `UserResp`
+- 统一放在 `model/resp` 包下
+
+**Resp 对象继承规范：**
+
+响应对象应优先继承 sh-web 提供的基础类：
+
+| 基础类 | 包路径 | 适用场景 |
+|--------|--------|----------|
+| `EntityResp` | `com.wkclz.web.bean.EntityResp` | 实体响应（含审计字段） |
+
+**示例：**
+```java
+import com.wkclz.web.bean.EntityResp;
+
+@Data
+public class UserResp extends EntityResp {
+
+    private String userCode;
+    private String username;
+    private String nickname;
+    private String email;
+    private String phone;
+    private String statusName;
+}
+```
 
 **分页响应示例：**
 ```java
 @Data
-public class PageResponse<T> {
+public class PageResp<T> {
     private Integer current;   // 当前页码
     private Integer size;      // 每页条数
     private Integer page;     // 总页码数
@@ -270,36 +322,63 @@ public class PageResponse<T> {
 }
 ```
 
-### VO（视图对象）
+### Entity、Req、Resp 的区别
 
-| 特点 | 说明 |
-|------|------|
-| 面向视图 | 主要用于前端展示 |
-| 按需定制 | 根据页面需求定制字段 |
-| 可以组合 | 可以组合多个 Entity 或 DTO 的字段 |
+| 维度 | Entity | Req | Resp |
+|------|--------|-----|------|
+| 用途 | 数据库映射 | 接收请求参数 | 返回响应数据 |
+| 层次 | 数据访问层 | 控制层 | 控制层 |
+| 字段 | 与表完全一致 | 按接口输入需求 | 按接口输出需求 |
+| 业务 | 无 | 可有 | 可有 |
+| 校验 | 无 | 必须有 | 无 |
+| 继承 | - | 优先继承 sh-web 的 Req 类 | 优先继承 sh-web 的 Resp 类 |
 
-**示例：**
+### sh-web Bean 类使用规范
+
+所有请求和响应对象必须遵循以下规范：
+
+**Req 对象：**
+1. 查询详情接口：优先直接使用 `IdReq` 或继承它
+2. 分页查询接口：优先直接使用 `PageReq` 或继承它
+3. 更新接口：必须继承 `UpdateReq`（自动包含 id 和 version）
+4. 删除接口：优先直接使用 `RemoveReq`（支持单条和批量）
+5. 新增接口：根据业务需求自定义，无需继承基础类
+
+**Resp 对象：**
+1. 实体查询响应：必须继承 `EntityResp`（自动包含审计字段）
+2. 列表响应：根据业务需求自定义
+3. 分页响应：使用 `PageResp<T>` 泛型
+
+**使用示例：**
+
 ```java
-@Data
-public class UserVO {
-    private Long id;
-    private String userCode;
-    private String username;
-    private String nickname;
-    private String email;
-    private String phone;
-    private String statusName;    // 状态中文名
-    private String createTimeStr; // 格式化后的创建时间
-    private List<String> roles;   // 用户角色列表
+// Controller 示例
+@RestController
+@RequestMapping("/api/user")
+public class UserController {
+
+    @GetMapping("/detail")
+    public R<UserResp> getUserDetail(@Valid IdReq req) {
+        UserEntity user = userService.getById(req.getId());
+        return R.ok(convertToResp(user));
+    }
+
+    @GetMapping("/list")
+    public R<PageResp<UserResp>> getUserList(UserQueryReq req) {
+        Page<UserEntity> page = userService.queryPage(req);
+        return R.ok(convertToPageResp(page));
+    }
+
+    @PutMapping("/update")
+    public R<UserResp> updateUser(@Valid @RequestBody UserUpdateReq req) {
+        UserEntity user = userService.update(req);
+        return R.ok(convertToResp(user));
+    }
+
+    @DeleteMapping("/remove")
+    public R<Void> removeUser(@Valid @RequestBody RemoveReq req) {
+        userService.remove(req);
+        return R.ok();
+    }
 }
 ```
-
-### Entity、DTO、VO 的区别
-
-| 维度 | Entity | DTO | VO |
-|------|--------|-----|-----|
-| 用途 | 数据库映射 | 数据传输 | 视图展示 |
-| 层次 | 数据访问层 | 服务层 | 控制层 |
-| 字段 | 与表完全一致 | 按接口需求 | 按页面需求 |
-| 业务 | 无 | 可有 | 可有 |
-| 校验 | 无 | 有 | 无 |

@@ -299,6 +299,183 @@ public class ThreadContextController {
 }
 ```
 
+### 7. Bean 数据对象 - 请求响应基础类
+
+sh-web 提供了一组通用的请求响应数据对象，位于 `com.wkclz.web.bean` 包下，用于标准化 API 请求和响应格式。
+
+#### 7.1 IdReq - 主键ID请求
+
+用于通过主键ID查询或操作单个资源的请求对象：
+
+```java
+import com.wkclz.web.bean.IdReq;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/user")
+public class UserController {
+    
+    @GetMapping("/detail")
+    public R<UserResponse> getUserDetail(@Valid IdReq req) {
+        UserEntity user = userService.getById(req.getId());
+        return R.ok(convertToResponse(user));
+    }
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | Long | 是 | 主键ID |
+
+#### 7.2 PageReq - 分页请求
+
+用于分页查询的请求对象：
+
+```java
+import com.wkclz.web.bean.PageReq;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/user")
+public class UserController {
+    
+    @GetMapping("/list")
+    public R<PageResponse<UserResponse>> getUserList(PageReq req) {
+        Page<UserEntity> page = userService.queryPage(req);
+        return R.ok(convertToPageResponse(page));
+    }
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| current | Long | 否 | 当前页码，默认1 |
+| size | Long | 否 | 每页大小，默认10 |
+
+#### 7.3 UpdateReq - 更新请求
+
+用于更新操作的请求对象，包含乐观锁版本号：
+
+```java
+import com.wkclz.web.bean.UpdateReq;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
+public class UserUpdateRequest extends UpdateReq {
+    
+    private String username;
+    private String email;
+    private String phone;
+    
+    // getter/setter
+}
+
+@RestController
+@RequestMapping("/api/user")
+public class UserController {
+    
+    @PutMapping("/update")
+    public R<UserResponse> updateUser(@Valid @RequestBody UserUpdateRequest req) {
+        UserEntity user = userService.updateById(req);
+        return R.ok(convertToResponse(user));
+    }
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | Long | 是 | 主键ID |
+| version | Integer | 是 | 数据版本（乐观锁） |
+
+#### 7.4 RemoveReq - 删除请求
+
+用于删除操作的请求对象，支持单条和批量删除：
+
+```java
+import com.wkclz.web.bean.RemoveReq;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/user")
+public class UserController {
+    
+    @DeleteMapping("/remove")
+    public R<Void> removeUser(@Valid @RequestBody RemoveReq req) {
+        userService.remove(req);
+        return R.ok();
+    }
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | Long | 二选一 | 单个主键ID |
+| ids | List\<Long\> | 二选一 | 主键ID列表（批量删除） |
+
+**验证规则：** `id` 和 `ids` 必须至少填写一个。
+
+#### 7.5 EntityResp - 实体响应
+
+用于实体查询响应的基础类，包含通用的审计字段：
+
+```java
+import com.wkclz.web.bean.EntityResp;
+
+public class UserResponse extends EntityResp {
+    
+    private String userCode;
+    private String username;
+    private String nickname;
+    private String email;
+    private String phone;
+    private Integer status;
+    
+    // getter/setter
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long | 主键ID |
+| createTime | LocalDateTime | 创建时间 |
+| createBy | String | 创建人code |
+| createByName | String | 创建人姓名 |
+| updateTime | LocalDateTime | 更新时间 |
+| updateBy | String | 更新人code |
+| updateByName | String | 更新人姓名 |
+| remark | String | 备注 |
+| version | Integer | 数据版本 |
+
+#### 7.6 RestInfo - REST API 信息
+
+用于描述 REST API 接口信息的内部类，主要配合 `RestHelper` 使用：
+
+**字段说明：**
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| clazz | Class | 控制器类 |
+| appCode | String | 应用编码 |
+| code | String | 接口编码 |
+| module | String | 模块名称 |
+| method | String | HTTP方法（GET/POST/PUT/DELETE） |
+| uri | String | 请求URI |
+| name | String | 接口名称 |
+| desc | String | 接口描述 |
+| writeFlag | Integer | 是否写操作标识 |
+
 ## 🎯 最佳实践
 
 ### 1. 统一异常处理实践
