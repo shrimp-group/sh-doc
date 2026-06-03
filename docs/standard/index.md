@@ -20,6 +20,7 @@
 | 10 | 日志规范 | `docs/standard/logging.md` | 日志记录、日志级别、日志格式等规范 |
 | 11 | AI编程范式 | `docs/standard/ai-paradigm.md` | AI辅助编程的工具选择、质量控制、安全合规及最佳实践 |
 | 12 | AI编程实践 | `docs/standard/ai-practice.md` | 国内主流AI编程工具的具体使用实践与案例 |
+| 13 | Harness 工程 | `docs/standard/harness.md` | 以Trae为工具的Harness工程实践规范 |
 
 ## 规范使用说明
 
