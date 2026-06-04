@@ -73,7 +73,7 @@ CREATE TABLE `auth_user` (
   `update_by` varchar(31) DEFAULT NULL COMMENT '更新人',
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `version` int NOT NULL DEFAULT '0' COMMENT '版本号',
-  `status` bigint unsigned NOT NULL DEFAULT '1' COMMENT 'status',
+  `deleted` bigint unsigned NOT NULL DEFAULT '0' COMMENT '软删除标记',
   PRIMARY KEY (`id`) USING BTREE,
   KEY `user_code` (`user_code`) USING BTREE,
   KEY `username` (`username`) USING BTREE
