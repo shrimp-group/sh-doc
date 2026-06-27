@@ -42,8 +42,8 @@
 | sort        | sort       | 排序     | 若业务逻辑无需排序时，可全局忽略此字段                  |
 | create_time | createTime | 创建时间   | 前端无需传值，后端自行维护                        |
 | create_by   | createBy   | 创建人    | 用户编码，前端无需传值，后端自行维护                   |
-| update_time | updateTime | 修改时间   | 前端无需传值，后端自行维护                        |
-| update_by   | updateBy   | 修改人    | 用户编码，前端无需传值，后端自行维护                   |
+| update_time | updateTime | 更新时间   | 前端无需传值，后端自行维护                        |
+| update_by   | updateBy   | 更新人    | 用户编码，前端无需传值，后端自行维护                   |
 | remark      | remark     | 备注     | 一般不用于控制业务，只作为数据的备注使用                 |
 | version     | version    | 版本号    | 乐观锁控制字段。在 update 相关接口时必传             |
 | deleted     | 无          | 逻辑删除状态 | 不展示给任意业务逻辑。deleted=0 表示有效，删除时填充时间戳   |
