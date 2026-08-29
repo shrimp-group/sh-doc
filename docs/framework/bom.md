@@ -74,7 +74,7 @@
         <dependency>
             <groupId>com.wkclz.framework</groupId>
             <artifactId>sh-bom</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
+            <version>5.0.1-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -115,7 +115,7 @@
 <parent>
     <groupId>com.wkclz.framework</groupId>
     <artifactId>sh-parent</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.0.1-SNAPSHOT</version>
 </parent>
 
 <artifactId>sh-core</artifactId>
@@ -138,9 +138,9 @@
 ```xml
 <properties>
     <!-- 格式：<artifactId>.version -->
-    <hutool.version>5.8.42</hutool.version>
-    <fastjson2.version>2.0.60</fastjson2.version>
-    <mysql-connector-j.version>9.5.0</mysql-connector-j.version>
+    <hutool.version>5.8.44</hutool.version>
+    <fastjson2.version>2.0.61</fastjson2.version>
+    <mysql-connector-j.version>9.7.0</mysql-connector-j.version>
     <!-- ... 其他依赖版本 -->
 </properties>
 ```
@@ -158,14 +158,31 @@
 
 | 依赖 | 版本 | 说明 |
 |------|------|------|
-| Spring Boot | 4.0.0 | 基础框架 |
-| Hutool | 5.8.42 | Java 工具包 |
-| FastJSON2 | 2.0.60 | JSON 处理 |
-| MySQL Connector | 9.5.0 | MySQL 驱动 |
-| MyBatis Spring Boot Starter | 4.0.0 | ORM 框架 |
-| Lombok | 1.18.42 | 代码生成 |
-| Druid | 1.2.28-SNAPSHOT | 连接池 |
+| Spring Boot | 4.0.6 | 基础框架（由 Spring Boot Parent 管理） |
+| commons-collections4 | 4.5.0 | Apache 集合工具库 |
+| Guava | 33.6.0-jre | Java 工具库 |
+| Hutool | 5.8.44 | Java 工具包 |
+| Lombok | 1.18.46 | Java 注解处理器 |
+| FastJSON2 | 2.0.61 | JSON 处理 |
+| ZXing | 3.5.4 | 二维码生成 |
 | JJWT | 0.13.0 | JWT 令牌 |
+| Bouncy Castle | 1.84 | 加密库（bcprov/bcpkix/bcutil） |
+| XXL-Job Core | 3.4.0 | 分布式任务调度 |
+| weixin-java（miniapp/pay/open/mp/cp） | 4.8.0 | 微信生态 SDK |
+| Kubernetes client-java | 26.0.0 | Kubernetes 客户端 |
+| MQTTv3（Paho） | 1.2.5 | MQTT 消息协议 |
+| jakarta.mail | 2.0.2 | Java 邮件 |
+| druid-spring-boot-4-starter | 1.2.28-SNAPSHOT | 数据库连接池 |
+| MySQL Connector/J | 9.7.0 | MySQL 驱动 |
+| mybatis-spring-boot-starter | 4.0.1 | ORM 框架 |
+| pagehelper-spring-boot-starter | 4.0.0 | 分页插件 |
+| spring-boot-starter-aop | 4.0.0-M2 | AOP 支持 |
+| AWS S3 | 2.42.41 | 对象存储 |
+| aliyun-sdk-oss | 3.18.5 | 阿里云对象存储 |
+| alipay-sdk-java | 4.40.771.ALL | 支付宝 SDK |
+| Rhino | 1.9.1 | JavaScript 引擎 |
+| swagger-annotations | 2.2.49 | Swagger/OpenAPI 注解 |
+| jakarta.validation-api | 4.0.0-M1 | Jakarta 校验 API |
 
 ## 最佳实践
 
@@ -178,7 +195,7 @@
 <parent>
     <groupId>com.wkclz.framework</groupId>
     <artifactId>sh-parent</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.0.1-SNAPSHOT</version>
 </parent>
 
 <!-- 2. 添加需要的依赖（无需版本） -->
@@ -219,7 +236,7 @@
         <dependency>
             <groupId>com.wkclz.framework</groupId>
             <artifactId>sh-bom</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
+            <version>5.0.1-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

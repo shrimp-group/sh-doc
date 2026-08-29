@@ -2,7 +2,7 @@
 
 > XXL-Job 分布式定时任务集成模块
 
-`sh-xxljob` 是 `sh-framework` 的 XXL-Job 分布式定时任务集成模块，为应用提供开箱即用的执行器自动配置。该模块基于 `xxl-job-core` 实现，简化了分布式定时任务的集成工作，支持 `@XxlJob` 注解开发任务处理器。
+`sh-xxljob` 是 `sh-framework` 的 XXL-Job 分布式定时任务集成模块，为应用提供开箱即用的执行器自动配置。该模块基于 `xxl-job-core`（3.4.0）实现，简化了分布式定时任务的集成工作，支持 `@XxlJob` 注解开发任务处理器。
 
 ## 模块概述
 
@@ -15,7 +15,7 @@
 
 ### 主要特性
 
-- **自动配置**：Spring Boot 3.x 自动配置，无需手动配置
+- **自动配置**：Spring Boot 自动配置，无需手动配置
 - **智能默认**：`appName` 自动使用应用名称
 - **完整支持**：支持所有 XXL-Job 标准配置项
 - **示例代码**：内置示例任务处理器
@@ -49,13 +49,13 @@ xxl:
     executor:
       appname: ${spring.application.name}  # 自动使用应用名称
       port: 9999
-      logpath: ./logs/xxl-job
+      logpath: ./xxl-job/jobhandler
       logretentiondays: 30
 ```
 
 ### 3. 自动配置
 
-`sh-xxljob` 使用 Spring Boot 3.x 的自动配置机制，通过 `XxlJobAutoConfigure` 类自动扫描并注册相关组件：
+`sh-xxljob` 通过 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 自动注册，由 `XxlJobAutoConfigure` 自动扫描并注册相关组件：
 
 ```java
 @AutoConfiguration
@@ -68,7 +68,7 @@ public class XxlJobAutoConfigure {
 
 ### 1. XxlJobConfig - 执行器配置类
 
-`XxlJobConfig` 是核心配置类，负责读取 XXL-Job 执行器配置并创建 `XxlJobSpringExecutor` Bean。
+`XxlJobConfig`（`@Component`）读取 XXL-Job 执行器配置并创建 `XxlJobSpringExecutor` Bean（`xxlJobExecutor()`）。
 
 #### 配置项说明
 
@@ -80,9 +80,9 @@ public class XxlJobAutoConfigure {
 | `xxl.job.executor.appname` | `${spring.application.name}` | 执行器 AppName（心跳注册分组依据） |
 | `xxl.job.executor.address` | 空 | 执行器注册地址（优先使用，空则自动 IP:PORT） |
 | `xxl.job.executor.ip` | 空 | 执行器 IP（多网卡时可手动设置） |
-| `xxl.job.executor.port` | 9999 | 执行器端口号（多执行器需不同） |
+| `xxl.job.executor.port` | 9999 | 执行器端口号（小于等于 0 则自动获取；多执行器需不同端口） |
 | `xxl.job.executor.logpath` | `./xxl-job/jobhandler` | 执行器运行日志文件存储磁盘路径 |
-| `xxl.job.executor.logretentiondays` | 30 | 执行器日志文件保存天数（≥3生效，-1关闭清理） |
+| `xxl.job.executor.logretentiondays` | 30 | 执行器日志文件保存天数（≥3 生效，-1 关闭清理） |
 
 #### 核心 Bean 创建
 
@@ -106,6 +106,8 @@ public XxlJobSpringExecutor xxlJobExecutor() {
 
 ### 2. 编写 Job Handler
 
+xxl-job 3.4.0 推荐使用 `XxlJobHelper` 进行日志记录、参数获取、分片处理与结果上报；任务方法返回 `void`，执行结果通过 `handleSuccess` / `handleFail` / `handleResult` 显式上报，方法抛出异常同样视为失败。
+
 #### 基本示例
 
 ```java
@@ -119,45 +121,19 @@ public class MyJobHandler {
     @XxlJob("myBusinessJob")
     public void myBusinessJob() {
         XxlJobHelper.log("开始执行业务任务...");
-        
+
         // 业务逻辑
         try {
-            // 执行具体的业务操作
             processBusinessLogic();
             XxlJobHelper.log("业务任务执行完成");
         } catch (Exception e) {
             XxlJobHelper.log("业务任务执行失败: " + e.getMessage());
-            throw e;
+            throw e; // 抛异常表示任务失败
         }
     }
 
-    @XxlJob("myDataSyncJob")
-    public ReturnT<String> myDataSyncJob() {
-        XxlJobHelper.log("数据同步开始");
-        
-        // 业务逻辑
-        try {
-            boolean success = syncData();
-            if (success) {
-                XxlJobHelper.log("数据同步成功");
-                return ReturnT.SUCCESS;
-            } else {
-                XxlJobHelper.log("数据同步失败");
-                return new ReturnT<>(ReturnT.FAIL_CODE, "数据同步失败");
-            }
-        } catch (Exception e) {
-            XxlJobHelper.log("数据同步异常: " + e.getMessage());
-            return new ReturnT<>(ReturnT.FAIL_CODE, e.getMessage());
-        }
-    }
-    
     private void processBusinessLogic() {
         // 具体的业务逻辑
-    }
-    
-    private boolean syncData() {
-        // 数据同步逻辑
-        return true;
     }
 }
 ```
@@ -169,25 +145,44 @@ public class MyJobHandler {
 public class ParameterizedJobHandler {
 
     @XxlJob("parameterizedJob")
-    public ReturnT<String> parameterizedJob() {
+    public void parameterizedJob() {
         // 获取任务参数
         String jobParam = XxlJobHelper.getJobParam();
         XxlJobHelper.log("任务参数: " + jobParam);
-        
+
         // 获取分片参数
         int shardIndex = XxlJobHelper.getShardIndex();
         int shardTotal = XxlJobHelper.getShardTotal();
         XxlJobHelper.log("分片参数: {}/{}", shardIndex, shardTotal);
-        
+
         // 根据分片参数处理数据
         processDataByShard(shardIndex, shardTotal, jobParam);
-        
-        return ReturnT.SUCCESS;
     }
-    
+
     private void processDataByShard(int shardIndex, int shardTotal, String param) {
         // 根据分片处理数据
         // 例如：处理数据库中的某一部分数据
+    }
+}
+```
+
+#### 手动上报执行结果
+
+```java
+@XxlJob("resultJob")
+public void resultJob() {
+    try {
+        // 业务逻辑
+        boolean success = executeBusinessLogic();
+        if (success) {
+            XxlJobHelper.handleSuccess("执行成功");
+        } else {
+            XxlJobHelper.handleFail("业务执行未成功");
+        }
+    } catch (Exception e) {
+        XxlJobHelper.log("执行异常: {}", e.getMessage());
+        XxlJobHelper.handleFail(e.getMessage());
+        throw e;
     }
 }
 ```
@@ -234,7 +229,7 @@ xxl:
       timeout: 5
     executor:
       appname: order-service
-      address: 
+      address:
       ip: 192.168.1.100
       port: 9999
       logpath: /data/logs/xxl-job/order-service
@@ -273,40 +268,35 @@ xxl:
 ```java
 @Component
 public class DataSyncJobHandler {
-    
+
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private OrderService orderService;
-    
+
     @XxlJob("syncUserData")
-    public ReturnT<String> syncUserData() {
+    public void syncUserData() {
         XxlJobHelper.log("开始同步用户数据");
-        
-        try {
-            // 同步用户数据
-            int count = userService.syncFromExternalSystem();
-            XxlJobHelper.log("成功同步 {} 条用户数据", count);
-            
-            return ReturnT.SUCCESS;
-        } catch (Exception e) {
-            XxlJobHelper.log("用户数据同步失败: {}", e.getMessage());
-            return new ReturnT<>(ReturnT.FAIL_CODE, "同步失败: " + e.getMessage());
-        }
+
+        // 同步用户数据
+        int count = userService.syncFromExternalSystem();
+        XxlJobHelper.log("成功同步 {} 条用户数据", count);
+
+        // 执行失败时抛出异常即可标记任务失败
     }
-    
+
     @XxlJob("syncOrderData")
     public void syncOrderData() {
         XxlJobHelper.log("开始同步订单数据");
-        
+
         // 获取分片参数，实现分布式处理
         int shardIndex = XxlJobHelper.getShardIndex();
         int shardTotal = XxlJobHelper.getShardTotal();
-        
+
         // 根据分片处理订单数据
         orderService.syncOrdersByShard(shardIndex, shardTotal);
-        
+
         XxlJobHelper.log("订单数据同步完成，分片: {}/{}", shardIndex, shardTotal);
     }
 }
@@ -317,36 +307,30 @@ public class DataSyncJobHandler {
 ```java
 @Component
 public class ReportJobHandler {
-    
+
     @Autowired
     private ReportService reportService;
-    
+
     @XxlJob("generateDailyReport")
-    public ReturnT<String> generateDailyReport() {
+    public void generateDailyReport() {
         XxlJobHelper.log("开始生成日报表");
-        
-        try {
-            // 获取昨天的日期
-            LocalDate yesterday = LocalDate.now().minusDays(1);
-            
-            // 生成日报表
-            ReportResult result = reportService.generateDailyReport(yesterday);
-            
-            XxlJobHelper.log("日报表生成成功: {}", result);
-            return ReturnT.SUCCESS;
-        } catch (Exception e) {
-            XxlJobHelper.log("日报表生成失败: {}", e.getMessage());
-            return new ReturnT<>(ReturnT.FAIL_CODE, "生成失败: " + e.getMessage());
-        }
+
+        // 获取昨天的日期
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+
+        // 生成日报表
+        ReportResult result = reportService.generateDailyReport(yesterday);
+
+        XxlJobHelper.log("日报表生成成功: {}", result);
     }
-    
+
     @XxlJob("cleanOldReports")
     public void cleanOldReports() {
         XxlJobHelper.log("开始清理过期报表");
-        
+
         // 清理30天前的报表
         int deletedCount = reportService.cleanOldReports(30);
-        
+
         XxlJobHelper.log("清理完成，共删除 {} 个过期报表", deletedCount);
     }
 }
@@ -357,41 +341,34 @@ public class ReportJobHandler {
 ```java
 @Component
 public class MessageJobHandler {
-    
+
     @Autowired
     private MessageService messageService;
-    
+
     @XxlJob("processPendingMessages")
     public void processPendingMessages() {
         XxlJobHelper.log("开始处理待发送消息");
-        
+
         // 获取任务参数（每次处理的消息数量）
         String param = XxlJobHelper.getJobParam();
         int batchSize = StringUtils.isNotBlank(param) ? Integer.parseInt(param) : 100;
-        
+
         // 处理待发送消息
         int processedCount = messageService.processPendingMessages(batchSize);
-        
+
         XxlJobHelper.log("消息处理完成，共处理 {} 条消息", processedCount);
     }
-    
+
     @XxlJob("retryFailedMessages")
-    public ReturnT<String> retryFailedMessages() {
+    public void retryFailedMessages() {
         XxlJobHelper.log("开始重试失败消息");
-        
-        try {
-            int retryCount = messageService.retryFailedMessages();
-            
-            if (retryCount > 0) {
-                XxlJobHelper.log("成功重试 {} 条失败消息", retryCount);
-                return ReturnT.SUCCESS;
-            } else {
-                XxlJobHelper.log("没有需要重试的失败消息");
-                return new ReturnT<>(ReturnT.SUCCESS_CODE, "没有需要重试的消息");
-            }
-        } catch (Exception e) {
-            XxlJobHelper.log("重试失败消息异常: {}", e.getMessage());
-            return new ReturnT<>(ReturnT.FAIL_CODE, "重试失败: " + e.getMessage());
+
+        int retryCount = messageService.retryFailedMessages();
+
+        if (retryCount > 0) {
+            XxlJobHelper.log("成功重试 {} 条失败消息", retryCount);
+        } else {
+            XxlJobHelper.log("没有需要重试的失败消息");
         }
     }
 }
@@ -413,22 +390,26 @@ public class MessageJobHandler {
 
 ### 3. 异常处理
 
+xxl-job 3.4.0 下任务方法返回 `void`，执行结果通过 `XxlJobHelper` 的 `handleSuccess` / `handleFail` / `handleResult` 显式上报，方法抛出异常同样视为失败。推荐在 catch 中记录日志（`XxlJobHelper.log(String, Object...)` 或 `XxlJobHelper.log(Throwable)`）后重新抛出：
+
 ```java
 @XxlJob("safeJobHandler")
-public ReturnT<String> safeJobHandler() {
+public void safeJobHandler() {
     try {
         // 业务逻辑
         executeBusinessLogic();
-        return ReturnT.SUCCESS;
+        XxlJobHelper.handleSuccess("执行成功");
     } catch (BusinessException e) {
-        // 业务异常，记录日志并返回失败
+        // 业务异常，记录日志并标记失败
         XxlJobHelper.log("业务异常: {}", e.getMessage());
-        return new ReturnT<>(ReturnT.FAIL_CODE, e.getMessage());
+        XxlJobHelper.handleFail(e.getMessage());
+        throw e;
     } catch (Exception e) {
         // 系统异常，记录详细日志
         XxlJobHelper.log("系统异常: {}", e.getMessage());
-        XxlJobHelper.log("异常堆栈: ", e);
-        return new ReturnT<>(ReturnT.FAIL_CODE, "系统异常");
+        XxlJobHelper.log(e);
+        XxlJobHelper.handleFail("系统异常");
+        throw e;
     }
 }
 ```
@@ -519,6 +500,7 @@ public ReturnT<String> safeJobHandler() {
 3. **最小配置**：仅需配置 `xxl.job.admin.addresses` 即可运行
 4. **示例代码**：`XxlJobDemo` 会自动注册，如不需要可排除
 5. **日志管理**：合理设置 `logretentiondays`，避免日志文件过多
+6. **结果判定**：xxl-job 3.4.0 已移除 `ReturnT`，任务方法返回 `void`，通过 `XxlJobHelper.handleSuccess` / `handleFail` / `handleResult` 或抛异常上报结果
 
 ## 相关链接
 

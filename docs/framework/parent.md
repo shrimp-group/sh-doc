@@ -140,7 +140,7 @@ root-parent (最基础配置)
 ## sh-parent 实现详解
 
 ### 概述
-`sh-parent` 是 sh-framework 框架的核心父工程，为所有子模块和业务项目提供统一的构建配置、依赖管理和插件配置。它继承自 Spring Boot Parent 4.0.0，并集成了 `sh-bom` 进行依赖版本管理。
+`sh-parent` 是 sh-framework 框架的核心父工程，为所有子模块和业务项目提供统一的构建配置、依赖管理和插件配置。它继承自 Spring Boot Parent 4.0.6，并集成了 `sh-bom` 进行依赖版本管理。
 
 ### 核心特性
 
@@ -159,7 +159,7 @@ root-parent (最基础配置)
    - maven-compiler-plugin：Java 25 编译
    - maven-source-plugin：源码打包
    - flatten-maven-plugin：CI/CD 友好
-   - exec-maven-plugin：外部命令执行
+   - exec-maven-plugin：外部命令执行（3.6.2）
 
 4. **最佳实践集成**
    - 统一的构建标准
@@ -178,7 +178,7 @@ root-parent (最基础配置)
     <parent>
         <groupId>com.wkclz.framework</groupId>
         <artifactId>sh-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.0.1-SNAPSHOT</version>
         <relativePath>../sh-parent/pom.xml</relativePath>
     </parent>
 
@@ -209,7 +209,7 @@ root-parent (最基础配置)
     <parent>
         <groupId>com.wkclz.framework</groupId>
         <artifactId>sh-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.example</groupId>
@@ -238,7 +238,7 @@ root-parent (最基础配置)
         </dependency>
         <dependency>
             <groupId>com.wkclz.microapp</groupId>
-            <artifactId>micro-file</artifactId>
+            <artifactId>micro-fileos</artifactId>
         </dependency>
     </dependencies>
 </project>
@@ -260,7 +260,7 @@ root-parent (最基础配置)
 ### 微服务模块
 - `micro-audit`：审计服务
 - `micro-dict`：字典服务
-- `micro-file`：文件服务
+- `micro-fileos`：文件服务
 - `micro-liteflow`：规则引擎
 - `micro-form`：表单服务
 - `micro-fun`：函数服务
@@ -279,7 +279,12 @@ root-parent (最基础配置)
 ```xml
 <properties>
     <!-- 项目版本 -->
-    <revision>5.0.0-SNAPSHOT</revision>
+    <revision>5.0.1-SNAPSHOT</revision>
+
+    <!-- 微服务模块版本 -->
+    <microapp.version>5.0.1-SNAPSHOT</microapp.version>
+    <!-- IAM 模块版本 -->
+    <iam.version>5.0.1-SNAPSHOT</iam.version>
 
     <!-- Java 配置 -->
     <maven.compiler.source>25</maven.compiler.source>
@@ -298,7 +303,7 @@ root-parent (最基础配置)
 ```xml
 <dependencyManagement>
     <dependencies>
-        <!-- 导入 sh-bom 进行依赖版本管理 -->
+        <!-- 导入 sh-bom 进行第三方依赖版本管理 -->
         <dependency>
             <groupId>com.wkclz.framework</groupId>
             <artifactId>sh-bom</artifactId>
@@ -307,18 +312,130 @@ root-parent (最基础配置)
             <scope>import</scope>
         </dependency>
 
-        <!-- 管理框架模块版本 -->
+        <!-- 框架内部模块（版本由 ${revision} 统一管理） -->
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-tool</artifactId>
+            <version>${revision}</version>
+        </dependency>
         <dependency>
             <groupId>com.wkclz.framework</groupId>
             <artifactId>sh-core</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-mybatis</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-dynamicdb</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-redis</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-spring</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-xxljob</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-mqtt</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-web</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
-        <!-- 管理微服务模块版本 -->
+        <!-- IAM 模块（版本由 ${iam.version} 管理） -->
+        <dependency>
+            <groupId>com.wkclz.iam</groupId>
+            <artifactId>iam-session</artifactId>
+            <version>${iam.version}</version>
+        </dependency>
+
+        <!-- 微服务模块（版本由 ${microapp.version} 统一管理） -->
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-audit</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.wkclz.microapp</groupId>
             <artifactId>micro-dict</artifactId>
-            <version>${revision}</version>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-fileos</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-liteflow</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-form</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-fun</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-mask</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-msg</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-pay</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-pdf</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-rmcheck</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-seq</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-wxapp</artifactId>
+            <version>${microapp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.microapp</groupId>
+            <artifactId>micro-wxmp</artifactId>
+            <version>${microapp.version}</version>
         </dependency>
     </dependencies>
 </dependencyManagement>
@@ -332,7 +449,7 @@ root-parent (最基础配置)
 <parent>
     <groupId>com.wkclz.framework</groupId>
     <artifactId>sh-parent</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.0.1-SNAPSHOT</version>
 </parent>
 
 <groupId>com.example</groupId>
