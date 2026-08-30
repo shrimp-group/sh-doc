@@ -250,10 +250,15 @@ export default withMermaid({
           items: [{text: '关联检查', link: '/micro/micro-rmcheck'}]
         },
       ],
-      '/micro/micro-seq': [
+      '/micro/micro-seq/': [
         {
-          text: '微模块',
-          items: [{text: '序列服务', link: '/micro/micro-seq'}]
+          text: '序列服务',
+          items: [
+            {text: '概述', link: '/micro/micro-seq/'},
+            {text: '设计思路', link: '/micro/micro-seq/design'},
+            {text: '功能集成', link: '/micro/micro-seq/integration'},
+            {text: '使用指南', link: '/micro/micro-seq/usage'},
+          ]
         },
       ],
       '/micro/micro-wxapp': [
