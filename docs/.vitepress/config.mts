@@ -48,7 +48,7 @@ export default withMermaid({
           {text: '脱敏服务', link: '/micro/micro-mask'},
           {text: '消息服务', link: '/micro/micro-msg'},
           {text: '支付服务', link: '/micro/micro-pay'},
-          {text: 'PDF服务', link: '/micro/micro-pdf'},
+          {text: 'PDF服务', link: '/micro/micro-pdf/'},
           {text: '关联检查', link: '/micro/micro-rmcheck'},
           {text: '序列服务', link: '/micro/micro-seq'},
           {text: '微信小程序', link: '/micro/micro-wxapp'},
@@ -223,10 +223,15 @@ export default withMermaid({
           items: [{text: '支付服务', link: '/micro/micro-pay'}]
         },
       ],
-      '/micro/micro-pdf': [
+      '/micro/micro-pdf/': [
         {
-          text: '微模块',
-          items: [{text: 'PDF 服务', link: '/micro/micro-pdf'}]
+          text: 'PDF 服务',
+          items: [
+            {text: '概述', link: '/micro/micro-pdf/'},
+            {text: '设计思路', link: '/micro/micro-pdf/design'},
+            {text: '功能集成', link: '/micro/micro-pdf/integration'},
+            {text: '使用指南', link: '/micro/micro-pdf/usage'},
+          ]
         },
       ],
       '/micro/micro-rmcheck': [
