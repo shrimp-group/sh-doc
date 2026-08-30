@@ -50,7 +50,7 @@ export default withMermaid({
           {text: '支付服务', link: '/micro/micro-pay'},
           {text: 'PDF服务', link: '/micro/micro-pdf/'},
           {text: '关联检查', link: '/micro/micro-rmcheck'},
-          {text: '序列服务', link: '/micro/micro-seq'},
+          {text: '序列服务', link: '/micro/micro-seq/'},
           {text: '微信小程序', link: '/micro/micro-wxapp'},
           {text: '微信公众号', link: '/micro/micro-wxmp'},
         ]
