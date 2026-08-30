@@ -63,7 +63,7 @@ CREATE TABLE `mdm_pdf_template` (
 | 2 | GET | `/template/info` | PDF 模板详情 | `id` (Long) | `R<PdfTemplateInfoResp>` |
 | 3 | POST | `/template/create` | 新增 PDF 模板 | `templateName`(必填), `templateContext`(必填), `templateCode`(可选), `mockData`(可选), `sort`(可选), `remark`(可选) | `R<PdfTemplateInfoResp>` |
 | 4 | POST | `/template/update` | 修改 PDF 模板 | `id`(必填), `version`(必填), `templateName`(必填), `templateContext`(必填), `mockData`(可选), `sort`(可选), `remark`(可选) | `R<PdfTemplateInfoResp>` |
-| 5 | POST | `/template/remove` | 删除 PDF 模板 | `id` (Long, JSON Body) | `R<Void>` |
+| 5 | POST | `/template/remove` | 删除 PDF 模板 | `id`(Long) 或 `ids`(Long 数组) 二选一 | `R<Void>` |
 | 6 | POST | `/template/mock` | Mock 预览 PDF 模板 | `templateContext`(必填), `mockData`(可选) | PDF 文件流 (`application/pdf`) |
 
 ---

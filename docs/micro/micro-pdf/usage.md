@@ -228,7 +228,7 @@ POST /micro-pdf/template/remove
 Content-Type: application/json
 ```
 
-**请求参数**（Body，JSON）：`id`（模板主键 ID，必填）
+**请求参数**（Body，JSON）：`id`（模板主键 ID）或 `ids`（主键 ID 清单，与 `id` 二选一，继承 `RemoveReq`）
 
 **请求示例**：
 
@@ -265,9 +265,7 @@ curl -X POST "http://localhost:8080/micro-pdf/template/mock" \
 
 **响应**：直接返回 PDF 流（`application/pdf`），`Content-Disposition: inline`，文件名形如 `Mock_<时间戳>.pdf`。
 
-## Mock 在线预览
-
-`POST /micro-pdf/template/mock` 接口用于"所见即所得"地验证模板效果，无需保存模板即可即时生成 PDF 预览：
+Mock 接口用于"所见即所得"地验证模板效果，无需保存模板即可即时生成 PDF 预览：
 
 - 传入 `templateContext`（Thymeleaf HTML）与 `mockData`（JSON 数据），接口内部完成「解析数据 → 渲染 HTML → 生成 PDF → 写入响应」
 - 与正式模板的唯一区别是：`mock` 直接使用请求中传入的 `templateContext`，而 `writePdf`/`responsePdf` 通过 `templateCode` 从缓存加载模板内容

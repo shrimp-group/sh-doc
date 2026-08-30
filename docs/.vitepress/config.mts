@@ -38,7 +38,7 @@ export default withMermaid({
         text: '微模块',
         items: [
           {text: '概述', link: '/micro/'},
-          {text: '审计服务', link: '/micro/micro-audit'},
+          {text: '审计服务', link: '/micro/micro-audit/'},
           {text: '字典服务', link: '/micro/micro-dict/'},
           {text: '文件服务', link: '/micro/micro-fileos/'},
           {text: '表单服务', link: '/micro/micro-form'},
