@@ -45,7 +45,7 @@ export default withMermaid({
           {text: '函数服务', link: '/micro/micro-fun'},
           {text: 'K8s服务', link: '/micro/micro-k8s'},
           {text: '规则引擎', link: '/micro/micro-liteflow'},
-          {text: '脱敏服务', link: '/micro/micro-mask'},
+          {text: '脱敏服务', link: '/micro/micro-mask/'},
           {text: '消息服务', link: '/micro/micro-msg'},
           {text: '支付服务', link: '/micro/micro-pay'},
           {text: 'PDF服务', link: '/micro/micro-pdf/'},
@@ -148,10 +148,15 @@ export default withMermaid({
           items: [{text: '概述', link: '/micro/'}]
         },
       ],
-      '/micro/micro-audit': [
+      '/micro/micro-audit/': [
         {
-          text: '微模块',
-          items: [{text: '审计服务', link: '/micro/micro-audit'}]
+          text: '审计服务',
+          items: [
+            {text: '概述', link: '/micro/micro-audit/'},
+            {text: '设计思路', link: '/micro/micro-audit/design'},
+            {text: '功能集成', link: '/micro/micro-audit/integration'},
+            {text: '使用指南', link: '/micro/micro-audit/usage'},
+          ]
         },
       ],
       '/micro/micro-dict/': [
@@ -205,10 +210,15 @@ export default withMermaid({
           items: [{text: '规则引擎', link: '/micro/micro-liteflow'}]
         },
       ],
-      '/micro/micro-mask': [
+      '/micro/micro-mask/': [
         {
-          text: '微模块',
-          items: [{text: '脱敏服务', link: '/micro/micro-mask'}]
+          text: '脱敏服务',
+          items: [
+            {text: '概述', link: '/micro/micro-mask/'},
+            {text: '设计思路', link: '/micro/micro-mask/design'},
+            {text: '功能集成', link: '/micro/micro-mask/integration'},
+            {text: '使用指南', link: '/micro/micro-mask/usage'},
+          ]
         },
       ],
       '/micro/micro-msg': [
