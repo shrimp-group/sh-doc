@@ -29,30 +29,30 @@ private FileosPresignUploadApi fileosPresignUploadApi;
 
 ```java
 // 简单上传（使用默认 Bucket）
-MdmFileosRecordDto dto = fileosUploadApi.upload(file);
+RecordResp dto = fileosUploadApi.upload(file);
 
 // 指定业务分类
-MdmFileosRecordDto dto = fileosUploadApi.upload(file, "avatar");
+RecordResp dto = fileosUploadApi.upload(file, "avatar");
 
 // 指定业务分类和 Bucket
-MdmFileosRecordDto dto = fileosUploadApi.upload(file, "avatar", "my-bucket");
+RecordResp dto = fileosUploadApi.upload(file, "avatar", "my-bucket");
 
 // 指定业务分类、Bucket、是否公开
-MdmFileosRecordDto dto = fileosUploadApi.upload(file, "avatar", "my-bucket", false);
+RecordResp dto = fileosUploadApi.upload(file, "avatar", "my-bucket", false);
 
-// 使用 FileosUploadRequest 精细控制
-FileosUploadRequest request = new FileosUploadRequest();
+// 使用 UploadSimpleReq 精细控制
+UploadSimpleReq request = new UploadSimpleReq();
 request.setCategory("avatar");
 request.setBucketName("my-bucket");
 request.setIsPublic(false);
 request.setImageProcess("{\"resize\":{\"width\":200,\"height\":200,\"mode\":\"lfit\"}}");
-MdmFileosRecordDto dto = fileosUploadApi.upload(file, request);
+RecordResp dto = fileosUploadApi.upload(file, request);
 ```
 
 返回结果：
 
 ```java
-public class MdmFileosRecordDto {
+public class RecordResp {
     private Long id;
     private String fileId;       // 文件唯一ID，如：sh-fileos/prod/avatar/20240115/xxx.jpg
     private String fileName;     // 文件名
@@ -82,7 +82,7 @@ public class MdmFileosRecordDto {
 
 ```java
 // 公有文件上传
-MdmFileosRecordDto dto = fileosUploadApi.upload(file, "public_assets", "public-bucket", true);
+RecordResp dto = fileosUploadApi.upload(file, "public_assets", "public-bucket", true);
 ```
 
 **适用场景**：
@@ -96,21 +96,21 @@ MdmFileosRecordDto dto = fileosUploadApi.upload(file, "public_assets", "public-b
 
 ```java
 // 1. 初始化分片上传
-MultipartUploadInitRequest initRequest = new MultipartUploadInitRequest();
+MultipartUploadInitReq initRequest = new MultipartUploadInitReq();
 initRequest.setFileName("large-video.mp4");
 initRequest.setFileSize(1024L * 1024 * 500); // 500MB
 initRequest.setContentType("video/mp4");
 initRequest.setCategory("video");
 initRequest.setBucketName("media-bucket");
 initRequest.setPartCount(100);
-MultipartUploadInitResponse initResponse = fileosUploadApi.initMultipartUpload(initRequest);
+MultipartUploadInitResp initResponse = fileosUploadApi.initMultipartUpload(initRequest);
 // initResponse 包含 uploadId、fileId、各分片预签名 URL
 
 // 2. 上传各个分片（前端可使用预签名 URL 直接上传到 OSS）
 // ...
 
 // 3. 完成分片上传
-MultipartCompleteRequest completeRequest = new MultipartCompleteRequest();
+MultipartCompleteReq completeRequest = new MultipartCompleteReq();
 completeRequest.setUploadId(initResponse.getUploadId());
 completeRequest.setFileId(initResponse.getFileId());
 completeRequest.setBucketName("media-bucket");
@@ -122,7 +122,7 @@ List<CompletedPartInfo> parts = new ArrayList<>();
 parts.add(new CompletedPartInfo() {{ setPartNumber(1); setETag("etag-1"); }});
 // ... 添加更多分片信息
 completeRequest.setParts(parts);
-MdmFileosRecordDto dto = fileosUploadApi.completeMultipartUpload(completeRequest);
+RecordResp dto = fileosUploadApi.completeMultipartUpload(completeRequest);
 
 // 4. 中止分片上传（可选）
 fileosUploadApi.abortMultipartUpload(uploadId, fileId, bucketName, ossSp);
@@ -255,7 +255,7 @@ Integer deletedCount = fileosDeleteApi.delete(fileIds);
 
 ```java
 // 1. 获取预签名 URL
-PresignUploadRequest request = new PresignUploadRequest();
+PresignUploadReq request = new PresignUploadReq();
 request.setFileName("photo.jpg");
 request.setFileSize(1024L * 100);
 request.setContentType("image/jpeg");
@@ -263,12 +263,12 @@ request.setCategory("avatar");
 request.setBucketName("my-bucket");
 request.setIsPublic(false);
 request.setExpireMinutes(30);
-PresignUploadResponse response = fileosPresignUploadApi.presignUpload(request);
+PresignUploadResp response = fileosPresignUploadApi.presignUpload(request);
 // response.getPresignUrl() 交给前端 PUT 上传
 // response.getFileId() 用于后续确认
 
 // 2. 前端上传完成后，后端确认上传
-PresignCompleteRequest completeRequest = new PresignCompleteRequest();
+PresignCompleteReq completeRequest = new PresignCompleteReq();
 completeRequest.setFileId(response.getFileId());
 completeRequest.setOssSp(response.getOssSp());
 completeRequest.setBucketName(response.getBucketName());
@@ -276,42 +276,42 @@ completeRequest.setFileName("photo.jpg");
 completeRequest.setFileSize(1024L * 100);
 completeRequest.setCategory("avatar");
 completeRequest.setIsPublic(false);
-MdmFileosRecordDto dto = fileosPresignUploadApi.presignComplete(completeRequest);
+RecordResp dto = fileosPresignUploadApi.presignComplete(completeRequest);
 ```
 
 ### 预签名批量简单上传
 
 ```java
 // 批量获取预签名 URL
-List<PresignUploadRequest> requests = new ArrayList<>();
+List<PresignUploadReq> requests = new ArrayList<>();
 // ... 添加多个请求
-List<PresignUploadResponse> responses = fileosPresignUploadApi.presignUploadBatch(requests);
+List<PresignUploadResp> responses = fileosPresignUploadApi.presignUploadBatch(requests);
 
 // 批量确认上传
-List<PresignCompleteRequest> completeRequests = new ArrayList<>();
+List<PresignCompleteReq> completeRequests = new ArrayList<>();
 // ... 添加多个确认请求
-List<MdmFileosRecordDto> records = fileosPresignUploadApi.presignCompleteBatch(completeRequests);
+List<RecordResp> records = fileosPresignUploadApi.presignCompleteBatch(completeRequests);
 ```
 
 ### 预签名分片上传
 
 ```java
 // 1. 初始化分片上传，获取各分片的预签名 URL
-MultipartUploadInitRequest initRequest = new MultipartUploadInitRequest();
+MultipartUploadInitReq initRequest = new MultipartUploadInitReq();
 initRequest.setFileName("big-file.zip");
 initRequest.setFileSize(1024L * 1024 * 200);
 initRequest.setContentType("application/zip");
 initRequest.setCategory("archive");
 initRequest.setPartCount(40);
 initRequest.setExpireMinutes(60);
-MultipartUploadInitResponse initResponse = fileosPresignUploadApi.initMultipartUpload(initRequest);
+MultipartUploadInitResp initResponse = fileosPresignUploadApi.initMultipartUpload(initRequest);
 // initResponse.getParts() 包含每个分片的预签名 URL
 
 // 2. 前端使用预签名 URL 上传各个分片
 // ...
 
 // 3. 完成分片上传
-MultipartCompleteRequest completeRequest = new MultipartCompleteRequest();
+MultipartCompleteReq completeRequest = new MultipartCompleteReq();
 completeRequest.setUploadId(initResponse.getUploadId());
 completeRequest.setFileId(initResponse.getFileId());
 completeRequest.setBucketName("my-bucket");
@@ -319,7 +319,7 @@ completeRequest.setOssSp(initResponse.getOssSp());
 completeRequest.setFileName("big-file.zip");
 completeRequest.setFileSize(1024L * 1024 * 200);
 completeRequest.setParts(completedParts);
-MdmFileosRecordDto dto = fileosPresignUploadApi.completeMultipartUpload(completeRequest);
+RecordResp dto = fileosPresignUploadApi.completeMultipartUpload(completeRequest);
 
 // 4. 中止分片上传（可选）
 fileosPresignUploadApi.abortMultipartUpload(uploadId, fileId, bucketName, ossSp);
@@ -355,6 +355,9 @@ Content-Type: multipart/form-data
 - file: 文件 (必填)
 - category: 业务分类 (可选)
 - bucketName: 指定 Bucket (可选)
+- fileName: 自定义文件名 (可选)
+- isPublic: 是否公开读 (可选)
+- imageProcess: 图片处理参数 JSON (可选)
 ```
 
 **请求示例**：
@@ -389,10 +392,7 @@ curl -X POST http://localhost:8080/micro-fileos/upload/simple \
 POST /micro-fileos/upload/simple/public
 Content-Type: multipart/form-data
 
-参数:
-- file: 文件 (必填)
-- category: 业务分类 (可选)
-- bucketName: 指定 Bucket (可选)
+参数: 同 `/upload/simple`，强制 `isPublic=true`
 ```
 
 ### 签名 URL 接口
@@ -432,7 +432,7 @@ public class UserService {
      */
     public String uploadAvatar(Long userId, MultipartFile file) {
         // 1. 上传文件
-        MdmFileosRecordDto dto = fileosUploadApi.upload(file, "avatar");
+        RecordResp dto = fileosUploadApi.upload(file, "avatar");
         
         // 2. 更新用户头像
         User user = new User();

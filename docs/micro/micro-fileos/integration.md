@@ -169,10 +169,10 @@ CREATE TABLE `mdm_fileos_multipart` (
 
 | # | 方法 | 路径 | 说明 | 参数 | 返回值 |
 |---|------|------|------|------|------|
-| 10 | POST | `/upload/simple` | 简单上传 | `file` (MultipartFile), `category` (可选), `bucketName` (可选) | `R<MdmFileosRecordDto>` |
-| 11 | POST | `/upload/simple/public` | 公开上传 | `file` (MultipartFile), `category` (可选), `bucketName` (可选) | `R<MdmFileosRecordDto>` |
-| 12 | POST | `/upload/multipart/init` | 分片上传初始化 | `MultipartUploadInitRequest` JSON Body | `R<MultipartUploadInitResponse>` |
-| 13 | POST | `/upload/multipart/complete` | 分片上传完成 | `MultipartCompleteRequest` JSON Body | `R<MdmFileosRecordDto>` |
+| 10 | POST | `/upload/simple` | 简单上传 | `file` (MultipartFile), `category`/`bucketName`/`fileName`/`isPublic`/`imageProcess` (可选，`UploadSimpleReq`) | `R<RecordResp>` |
+| 11 | POST | `/upload/simple/public` | 公开上传 | 同上，强制 `isPublic=true` | `R<RecordResp>` |
+| 12 | POST | `/upload/multipart/init` | 分片上传初始化 | `MultipartUploadInitReq` JSON Body | `R<MultipartUploadInitResp>` |
+| 13 | POST | `/upload/multipart/complete` | 分片上传完成 | `MultipartCompleteReq` JSON Body | `R<RecordResp>` |
 | 14 | POST | `/upload/multipart/abort` | 分片上传中止 | `uploadId`, `fileId`, `bucketName` (可选), `ossSp` (可选) | `R<?>` |
 
 ### 3.4 文件下载
@@ -185,13 +185,13 @@ CREATE TABLE `mdm_fileos_multipart` (
 
 | # | 方法 | 路径 | 说明 | 参数 | 返回值 |
 |---|------|------|------|------|------|
-| 16 | POST | `/presign/upload` | 预签名简单上传 | `PresignUploadRequest` JSON Body | `R<PresignUploadResponse>` |
-| 17 | POST | `/presign/upload/batch` | 预签名批量简单上传 | `List<PresignUploadRequest>` JSON Body | `R<List<PresignUploadResponse>>` |
-| 18 | POST | `/presign/multipart/init` | 预签名分片上传初始化 | `MultipartUploadInitRequest` JSON Body | `R<MultipartUploadInitResponse>` |
-| 19 | POST | `/presign/multipart/complete` | 预签名分片上传完成 | `MultipartCompleteRequest` JSON Body | `R<MdmFileosRecordDto>` |
+| 16 | POST | `/presign/upload` | 预签名简单上传 | `PresignUploadReq` JSON Body | `R<PresignUploadResp>` |
+| 17 | POST | `/presign/upload/batch` | 预签名批量简单上传 | `List<PresignUploadReq>` JSON Body | `R<List<PresignUploadResp>>` |
+| 18 | POST | `/presign/multipart/init` | 预签名分片上传初始化 | `MultipartUploadInitReq` JSON Body | `R<MultipartUploadInitResp>` |
+| 19 | POST | `/presign/multipart/complete` | 预签名分片上传完成 | `MultipartCompleteReq` JSON Body | `R<RecordResp>` |
 | 20 | POST | `/presign/multipart/abort` | 预签名分片上传中止 | `uploadId`, `fileId`, `bucketName` (可选), `ossSp` (可选) | `R<?>` |
-| 21 | POST | `/presign/complete` | 预签名简单上传完成确认 | `PresignCompleteRequest` JSON Body | `R<MdmFileosRecordDto>` |
-| 22 | POST | `/presign/complete/batch` | 预签名批量完成确认 | `List<PresignCompleteRequest>` JSON Body | `R<List<MdmFileosRecordDto>>` |
+| 21 | POST | `/presign/complete` | 预签名简单上传完成确认 | `PresignCompleteReq` JSON Body | `R<RecordResp>` |
+| 22 | POST | `/presign/complete/batch` | 预签名批量完成确认 | `List<PresignCompleteReq>` JSON Body | `R<List<RecordResp>>` |
 
 ### 3.6 签名 URL
 

@@ -37,28 +37,28 @@ private FileosPresignUploadApi fileosPresignUploadApi;
 ```java
 // 简单上传 — 仅传文件，使用默认 Bucket
 // 返回文件记录信息，包含 fileId、previewUrl 等
-MdmFileosRecordDto record = fileosUploadApi.upload(multipartFile);
+RecordResp record = fileosUploadApi.upload(multipartFile);
 
 // 简单上传 — 指定业务分类
 // category 用于区分不同业务场景，便于文件管理和统计
-MdmFileosRecordDto record = fileosUploadApi.upload(multipartFile, "avatar");
+RecordResp record = fileosUploadApi.upload(multipartFile, "avatar");
 
 // 简单上传 — 指定分类和 Bucket
 // bucketName 用于指定使用哪个存储空间
-MdmFileosRecordDto record = fileosUploadApi.upload(multipartFile, "avatar", "my-bucket");
+RecordResp record = fileosUploadApi.upload(multipartFile, "avatar", "my-bucket");
 
 // 简单上传 — 指定分类、Bucket、是否公开读
 // isPublic 为 true 时文件公开可读，无需签名即可访问
-MdmFileosRecordDto record = fileosUploadApi.upload(multipartFile, "avatar", "my-bucket", true);
+RecordResp record = fileosUploadApi.upload(multipartFile, "avatar", "my-bucket", true);
 ```
 
 ### 精细控制上传
 
-使用 `FileosUploadRequest` 进行更精细的上传控制：
+使用 `UploadSimpleReq` 进行更精细的上传控制：
 
 ```java
-// 使用 FileosUploadRequest 精细控制
-FileosUploadRequest request = new FileosUploadRequest();
+// 使用 UploadSimpleReq 精细控制
+UploadSimpleReq request = new UploadSimpleReq();
 // 业务分类，用于区分不同业务场景
 request.setCategory("avatar");
 // 指定存储空间
@@ -68,13 +68,13 @@ request.setIsPublic(true);
 // 图片处理参数，支持缩放、裁剪、水印等 OSS 图片处理能力
 request.setImageProcess("{\"resize\":{\"width\":200,\"height\":200,\"mode\":\"lfit\"}}");
 // 执行上传
-MdmFileosRecordDto record = fileosUploadApi.upload(multipartFile, request);
+RecordResp record = fileosUploadApi.upload(multipartFile, request);
 ```
 
 **返回结果说明**：
 
 ```java
-public class MdmFileosRecordDto {
+public class RecordResp {
     private Long id;               // 记录主键 ID
     private String fileId;         // 文件唯一标识，如：avatar/20240524/a1b2c3d4.jpg
     private String fileName;       // 原始文件名
@@ -102,7 +102,7 @@ public class MdmFileosRecordDto {
 ```java
 // 分片上传 — 初始化
 // 创建分片上传任务，获取上传 ID 和各分片的预签名 URL
-MultipartUploadInitRequest initRequest = new MultipartUploadInitRequest();
+MultipartUploadInitReq initRequest = new MultipartUploadInitReq();
 // 文件名
 initRequest.setFileName("large-video.mp4");
 // 文件总大小（字节）
@@ -116,7 +116,7 @@ initRequest.setBucketName("media-bucket");
 // 分片总数
 initRequest.setPartCount(10);
 // 初始化分片上传，返回 uploadId、fileId、各分片预签名 URL
-MultipartUploadInitResponse initResponse = fileosUploadApi.initMultipartUpload(initRequest);
+MultipartUploadInitResp initResponse = fileosUploadApi.initMultipartUpload(initRequest);
 // initResponse.getUploadId() — 分片上传 ID
 // initResponse.getFileId() — 文件唯一标识
 // initResponse.getParts() — 各分片的预签名 URL 列表
@@ -125,7 +125,7 @@ MultipartUploadInitResponse initResponse = fileosUploadApi.initMultipartUpload(i
 ```java
 // 分片上传 — 完成
 // 当所有分片上传完成后，调用此方法合并分片
-MultipartCompleteRequest completeRequest = new MultipartCompleteRequest();
+MultipartCompleteReq completeRequest = new MultipartCompleteReq();
 // 分片上传 ID（初始化时返回）
 completeRequest.setUploadId(initResponse.getUploadId());
 // 文件唯一标识
@@ -148,7 +148,7 @@ parts.add(new CompletedPartInfo() {{ setPartNumber(2); setETag("etag-2"); }});
 // ... 其他分片
 completeRequest.setParts(parts);
 // 完成分片上传，返回文件记录
-MdmFileosRecordDto record = fileosUploadApi.completeMultipartUpload(completeRequest);
+RecordResp record = fileosUploadApi.completeMultipartUpload(completeRequest);
 ```
 
 ```java
@@ -299,7 +299,7 @@ Integer count = fileosDeleteApi.delete(fileIds);
 ```java
 // 预签名简单上传
 // 生成预签名 URL，交给前端 PUT 上传
-PresignUploadRequest request = new PresignUploadRequest();
+PresignUploadReq request = new PresignUploadReq();
 // 文件名
 request.setFileName("photo.jpg");
 // 文件大小（字节）
@@ -315,7 +315,7 @@ request.setIsPublic(false);
 // 预签名 URL 过期时间（分钟）
 request.setExpireMinutes(30);
 // 生成预签名 URL
-PresignUploadResponse response = fileosPresignUploadApi.presignUpload(request);
+PresignUploadResp response = fileosPresignUploadApi.presignUpload(request);
 // response.getPresignUrl() — 预签名上传 URL，交给前端 PUT 上传
 // response.getFileId() — 文件唯一标识，用于后续确认
 // response.getOssSp() — OSS 服务商
@@ -343,9 +343,9 @@ fetch(presignUrl, {
 ```java
 // 预签名批量简单上传
 // 一次生成多个文件的预签名 URL
-List<PresignUploadRequest> requestList = new ArrayList<>();
+List<PresignUploadReq> requestList = new ArrayList<>();
 // 添加第一个文件的请求
-PresignUploadRequest req1 = new PresignUploadRequest();
+PresignUploadReq req1 = new PresignUploadReq();
 req1.setFileName("photo1.jpg");
 req1.setFileSize(1024L * 100);
 req1.setContentType("image/jpeg");
@@ -353,7 +353,7 @@ req1.setCategory("photos");
 requestList.add(req1);
 // 添加更多文件...
 // 生成批量预签名 URL
-List<PresignUploadResponse> responses = fileosPresignUploadApi.presignUploadBatch(requestList);
+List<PresignUploadResp> responses = fileosPresignUploadApi.presignUploadBatch(requestList);
 ```
 
 ### 预签名分片上传
@@ -363,7 +363,7 @@ List<PresignUploadResponse> responses = fileosPresignUploadApi.presignUploadBatc
 ```java
 // 预签名分片上传 — 初始化
 // 创建分片上传任务，获取各分片的预签名 URL
-MultipartUploadInitRequest initRequest = new MultipartUploadInitRequest();
+MultipartUploadInitReq initRequest = new MultipartUploadInitReq();
 // 文件名
 initRequest.setFileName("big-file.zip");
 // 文件总大小
@@ -377,7 +377,7 @@ initRequest.setPartCount(20);
 // 预签名 URL 过期时间
 initRequest.setExpireMinutes(60);
 // 初始化分片上传
-MultipartUploadInitResponse initResponse = fileosPresignUploadApi.initMultipartUpload(initRequest);
+MultipartUploadInitResp initResponse = fileosPresignUploadApi.initMultipartUpload(initRequest);
 // initResponse.getParts() — 包含每个分片的预签名 URL 和序号
 // initResponse.getUploadId() — 分片上传 ID
 // initResponse.getFileId() — 文件唯一标识
@@ -386,7 +386,7 @@ MultipartUploadInitResponse initResponse = fileosPresignUploadApi.initMultipartU
 ```java
 // 预签名分片上传 — 完成
 // 当所有分片上传完成后，调用此方法合并分片
-MultipartCompleteRequest completeRequest = new MultipartCompleteRequest();
+MultipartCompleteReq completeRequest = new MultipartCompleteReq();
 completeRequest.setUploadId(initResponse.getUploadId());
 completeRequest.setFileId(initResponse.getFileId());
 completeRequest.setBucketName("my-bucket");
@@ -394,7 +394,7 @@ completeRequest.setOssSp(initResponse.getOssSp());
 completeRequest.setFileName("big-file.zip");
 completeRequest.setFileSize(1024L * 1024 * 200);
 completeRequest.setParts(completedParts);
-MdmFileosRecordDto record = fileosPresignUploadApi.completeMultipartUpload(completeRequest);
+RecordResp record = fileosPresignUploadApi.completeMultipartUpload(completeRequest);
 ```
 
 ```java
@@ -410,7 +410,7 @@ fileosPresignUploadApi.abortMultipartUpload(uploadId, fileId, bucketName, ossSp)
 ```java
 // 预签名简单上传 — 完成确认
 // 前端 PUT 完成后调用此方法，确认上传并生成文件记录
-PresignCompleteRequest completeRequest = new PresignCompleteRequest();
+PresignCompleteReq completeRequest = new PresignCompleteReq();
 // 文件唯一标识（预签名时返回）
 completeRequest.setFileId(response.getFileId());
 // OSS 服务商（预签名时返回）
@@ -426,7 +426,7 @@ completeRequest.setCategory("avatar");
 // 是否公开读
 completeRequest.setIsPublic(false);
 // 确认上传完成，返回文件记录
-MdmFileosRecordDto record = fileosPresignUploadApi.presignComplete(completeRequest);
+RecordResp record = fileosPresignUploadApi.presignComplete(completeRequest);
 ```
 
 ### 预签名批量完成确认
@@ -434,9 +434,9 @@ MdmFileosRecordDto record = fileosPresignUploadApi.presignComplete(completeReque
 ```java
 // 预签名批量完成确认
 // 批量确认多个文件上传完成
-List<PresignCompleteRequest> completeRequests = new ArrayList<>();
+List<PresignCompleteReq> completeRequests = new ArrayList<>();
 // 添加每个文件的确认请求...
-List<MdmFileosRecordDto> records = fileosPresignUploadApi.presignCompleteBatch(completeRequests);
+List<RecordResp> records = fileosPresignUploadApi.presignCompleteBatch(completeRequests);
 ```
 
 ## 6. 完整使用场景示例
@@ -462,7 +462,7 @@ public class UserService {
      */
     public String uploadAvatar(Long userId, MultipartFile file) {
         // 1. 上传文件，使用 avatar 分类标识头像
-        MdmFileosRecordDto dto = fileosUploadApi.upload(file, "avatar");
+        RecordResp dto = fileosUploadApi.upload(file, "avatar");
 
         // 2. 更新用户头像字段，存储 fileId
         User user = new User();
@@ -624,7 +624,7 @@ public class VideoService {
      */
     public VideoUploadInitResponse initUpload(VideoUploadRequest request) {
         // 1. 创建分片上传任务
-        MultipartUploadInitRequest initRequest = new MultipartUploadInitRequest();
+        MultipartUploadInitReq initRequest = new MultipartUploadInitReq();
         initRequest.setFileName(request.getFileName());
         initRequest.setFileSize(request.getFileSize());
         initRequest.setContentType(request.getContentType());
@@ -633,7 +633,7 @@ public class VideoService {
         initRequest.setExpireMinutes(60);  // 分片 URL 有效期
 
         // 2. 初始化分片上传
-        MultipartUploadInitResponse initResponse = fileosPresignUploadApi.initMultipartUpload(initRequest);
+        MultipartUploadInitResp initResponse = fileosPresignUploadApi.initMultipartUpload(initRequest);
 
         // 3. 保存视频记录
         Video video = new Video();
@@ -654,9 +654,9 @@ public class VideoService {
      * 完成视频上传
      * 前端上传完所有分片后调用此方法
      */
-    public MdmFileosRecordDto completeUpload(CompleteUploadRequest request) {
+    public RecordResp completeUpload(CompleteUploadRequest request) {
         // 1. 构建分片完成信息
-        MultipartCompleteRequest completeRequest = new MultipartCompleteRequest();
+        MultipartCompleteReq completeRequest = new MultipartCompleteReq();
         completeRequest.setUploadId(request.getUploadId());
         completeRequest.setFileId(request.getFileId());
         completeRequest.setFileName(request.getFileName());
@@ -665,7 +665,7 @@ public class VideoService {
         completeRequest.setParts(request.getCompletedParts());  // 各分片的 ETag
 
         // 2. 完成分片上传
-        MdmFileosRecordDto record = fileosPresignUploadApi.completeMultipartUpload(completeRequest);
+        RecordResp record = fileosPresignUploadApi.completeMultipartUpload(completeRequest);
 
         // 3. 更新视频记录状态
         Video video = new Video();
@@ -718,7 +718,7 @@ public class DocumentService {
 
         for (MultipartFile file : files) {
             // 1. 上传文件，分类为 document
-            MdmFileosRecordDto record = fileosUploadApi.upload(file, "document");
+            RecordResp record = fileosUploadApi.upload(file, "document");
 
             // 2. 保存文档记录
             Document doc = new Document();
