@@ -35,14 +35,9 @@ Core 模块是 sh-framework 框架的核心基础组件，提供应用程序开�
 - **异常工厂方法**：支持字符串模板与结果码的静态工厂方法 `of(...)`
 
 ### 4. 结果码枚举 (ResultCode)
-完整的结果码体系，按功能分段：
-- 标准状态码（200、400、401、403、404、500）
-- 10000 系列：Token / 应用 / 租户（10001–10102）
-- 20000 系列：客户端 / 路由 / CORS（20001–20004）
-- 30000 系列：登录 / 验证码（30001–30005）
-- 40000 系列：数据 / 参数（40001–40006）
-- 50000 系列：网络 / RPC（50001–50003）
-- 60000 系列：订单（60001–60003）
+仅定义 HTTP 标准语义码（共 6 个）：
+- 200 SUCCESS、400 VALIDATION_ERROR、401 UNAUTHORIZED、403 FORBIDDEN、404 NOT_FOUND、500 ERROR
+- 业务异常不使用预定义数字码，通过异常字符串消息描述（如 `ValidationException.of("数据不存在")`）；需要数字码时使用 `CommonException.of(code, msg)` 自定义
 
 ### 5. 注解系统
 - **@Router**：路由注解（类级别），声明模块与前缀
@@ -118,7 +113,7 @@ public class UserController {
     public R<UserEntity> getUser(@PathVariable Long id) {
         UserEntity user = userService.getById(id);
         if (user == null) {
-            throw new NotFoundException(ResultCode.RECORD_NOT_EXIST);
+            throw NotFoundException.of("用户不存在，ID: {}", id);
         }
         return R.ok(user);
     }
@@ -188,8 +183,8 @@ public class OrderService {
     public OrderEntity getOrder(Long orderId) {
         OrderEntity order = orderMapper.selectById(orderId);
         if (order == null) {
-            // 使用预定义的结果码
-            throw new NotFoundException(ResultCode.RECORD_NOT_EXIST);
+            // 字符串消息，NotFoundException 默认 code=404
+            throw NotFoundException.of("订单不存在: {}", orderId);
         }
 
         if (order.getStatus() == OrderStatus.PAID) {
@@ -303,7 +298,7 @@ public class CustomUserNameProvider implements UserNameProvider {
 
 ### 2. 响应设计规范
 1. **统一响应格式**：所有 API 返回 `R&lt;T&gt;` 类型响应
-2. **合理使用状态码**：根据业务场景选择 ResultCode
+2. **合理使用状态码**：HTTP 语义码由 ResultCode 提供，业务提示通过异常字符串消息描述
 3. **分页标准化**：分页查询使用 `PageData&lt;T&gt;` 封装，C 端游标列表使用 `CursorPageData&lt;T&gt;`
 4. **错误信息友好**：提供清晰的错误提示信息
 
@@ -337,7 +332,7 @@ A: 可以使用字符串模板功能：`CommonException.of("用户 {} 不存在"
 A: IdentityContext 基于 ThreadLocal 实现，每个线程有独立的副本，在多线程环境下是安全的。但需要注意在异步任务中手动传递身份上下文。
 
 ### Q4: 如何扩展结果码体系？
-A: 可以在 ResultCode 枚举中添加新的结果码，建议按照功能模块分类（如 10000 系列为 Token 相关，30000 系列为用户认证相关）。
+A: ResultCode 仅维护 HTTP 标准语义码，业务提示不新增数字码，直接使用异常字符串消息（如 `UserException.of("余额不足")`）；确需数字码时通过 `CommonException.of(code, msg)` 传递，避免与现有语义码冲突。
 
 ### Q5: 日志脱敏支持哪些模式？
 A: 支持正则表达式模式，可以配置手机号、邮箱、密码、身份证号等常见敏感信息的脱敏规则。
