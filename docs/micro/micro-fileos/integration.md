@@ -214,14 +214,17 @@ CREATE TABLE `mdm_fileos_multipart` (
 
 ### 4.1 Bucket 配置
 
-通过 REST API 或直接插入数据库配置 Bucket：
+Bucket 配置存储在 `mdm_fileos_bucket` 表（表结构见上文第 2 章数据库表结构），通过 REST API 管理，支持多 Bucket、多 OSS 服务商。
+
+各服务商的账号申请、AccessKey 创建与 Endpoint 信息，参见[存储服务商指南](./storage-providers)。
+
+#### 创建 Bucket — 阿里云 OSS
 
 ```bash
-# 通过 API 创建 Bucket
 curl -X POST http://localhost:8080/micro-fileos/bucket/create \
   -H 'Content-Type: application/json' \
   -d '{
-    "bucketName": "my-bucket",
+    "bucketName": "my-ali-bucket",
     "ossSp": "ALI_OSS",
     "endpointInner": "https://oss-cn-hangzhou-internal.aliyuncs.com",
     "endpointOuter": "https://oss-cn-hangzhou.aliyuncs.com",
@@ -231,6 +234,91 @@ curl -X POST http://localhost:8080/micro-fileos/bucket/create \
     "defaultFlag": 1
   }'
 ```
+
+#### 创建 Bucket — AWS S3
+
+```bash
+curl -X POST http://localhost:8080/micro-fileos/bucket/create \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "bucketName": "my-aws-bucket",
+    "ossSp": "AWS_S3",
+    "endpointInner": null,
+    "endpointOuter": "https://s3.us-east-1.amazonaws.com",
+    "region": "us-east-1",
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 1
+  }'
+```
+
+#### 创建 Bucket — MinIO（S3 兼容）
+
+```bash
+curl -X POST http://localhost:8080/micro-fileos/bucket/create \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "bucketName": "my-minio-bucket",
+    "ossSp": "S3_COMPATIBLE",
+    "endpointInner": "http://minio:9000",
+    "endpointOuter": "http://192.168.1.100:9000",
+    "region": "us-east-1",
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 1,
+    "system": "dev"
+  }'
+```
+
+#### 多 Bucket 配置示例
+
+系统支持配置多个 Bucket，分别对接不同的 OSS 服务商或用途。例如：默认 Bucket 使用阿里云 OSS 存放通用文件（`defaultFlag=1`），另配一个 AWS S3 Bucket 存放视频大文件、一个 MinIO Bucket 供本地开发测试：
+
+```bash
+# 默认 Bucket — 阿里云 OSS（通用文件）
+curl -X POST http://localhost:8080/micro-fileos/bucket/create \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "bucketName": "app-general",
+    "ossSp": "ALI_OSS",
+    "endpointInner": "https://oss-cn-hangzhou-internal.aliyuncs.com",
+    "endpointOuter": "https://oss-cn-hangzhou.aliyuncs.com",
+    "region": "cn-hangzhou",
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 1
+  }'
+
+# 视频 Bucket — AWS S3（大文件存储）
+curl -X POST http://localhost:8080/micro-fileos/bucket/create \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "bucketName": "app-video",
+    "ossSp": "AWS_S3",
+    "endpointOuter": "https://s3.us-east-1.amazonaws.com",
+    "region": "us-east-1",
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 0
+  }'
+
+# 开发 Bucket — MinIO（本地开发测试）
+curl -X POST http://localhost:8080/micro-fileos/bucket/create \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "bucketName": "app-dev",
+    "ossSp": "S3_COMPATIBLE",
+    "endpointInner": "http://minio:9000",
+    "endpointOuter": "http://localhost:9000",
+    "region": "us-east-1",
+    "accessKey": "your-access-key",
+    "secretKey": "your-secret-key",
+    "defaultFlag": 0,
+    "system": "dev"
+  }'
+```
+
+上传时未指定 Bucket 将使用默认 Bucket（`defaultFlag=1`），也可在上传时指定 Bucket 名称，使用方式见[后端使用指南 — 简单上传](./backend-usage)。
 
 ### 4.2 application.yml 配置
 

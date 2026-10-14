@@ -34,6 +34,8 @@ private FileosPresignUploadApi fileosPresignUploadApi;
 
 简单上传是最常用的方式，支持多种参数组合：
 
+上传时未指定 Bucket 将使用默认 Bucket，即 Bucket 配置中 `defaultFlag=1` 的 Bucket；也可通过 `bucketName` 参数指定 Bucket。Bucket 的配置方式见[功能集成 — Bucket 配置](./integration)。
+
 ```java
 // 简单上传 — 仅传文件，使用默认 Bucket
 // 返回文件记录信息，包含 fileId、previewUrl 等
