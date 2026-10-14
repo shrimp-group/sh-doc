@@ -41,4 +41,4 @@ Micro-Fileos 是完整的文件存储微服务模块，基于 Spring Boot 实现
 - [后端使用指南](./backend-usage) - 后端 API 使用示例
 - [前端使用指南](./frontend-usage) - 前端组件和接口使用指南
 - [配置指南](./configuration) - 应用配置项说明
-- [存储服务商配置](./storage-providers) - 存储服务商申请、配置和授权指南
+- [存储服务商指南](./storage-providers) - 存储服务商申请、开通与按需授权指南

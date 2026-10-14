@@ -78,7 +78,58 @@ interface ImageProcess {
 }
 ```
 
-## 2. 简单上传流程（预签名模式）
+## 2. 上传方式选型
+
+| 方式 | 接口 | 文件流向 | 适用场景 |
+|------|------|----------|----------|
+| 简单上传 | `POST /micro-fileos/upload/simple` | 前端 → 后端 → OSS | 小文件（≤50MB），后端需校验或加工文件 |
+| 预签名直传 | `/presign/upload` + `/presign/complete` | 前端 → OSS | 推荐，不占用后端带宽 |
+| 分片上传 | `/presign/multipart/*` | 前端 → OSS（分片） | 大文件（>50MB），支持并行与断点续传 |
+
+## 3. 简单上传（服务端中转）
+
+文件由前端上传到后端，由后端转存 OSS。`Content-Type: multipart/form-data`。
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `file` | File | 是 | 文件二进制 |
+| `category` | string | 否 | 业务分类 |
+| `bucketName` | string | 否 | 指定 Bucket，缺省使用默认 Bucket |
+| `fileName` | string | 否 | 自定义文件名，缺省使用原始文件名 |
+| `isPublic` | boolean | 否 | 是否公开读 |
+| `imageProcess` | string | 否 | 图片处理参数 JSON（见 1.4） |
+
+公开读文件可改用 `POST /micro-fileos/upload/simple/public`，等价于强制 `isPublic=true`。
+
+```javascript
+async function uploadSimple(file) {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('category', 'avatar')
+  // form.append('bucketName', 'my-bucket')
+  // form.append('fileName', 'custom-name.jpg')
+  // form.append('isPublic', 'false')
+  // form.append('imageProcess', JSON.stringify({ resize: { width: 200, height: 200, mode: 'fit' } }))
+
+  const resp = await fetch('/micro-fileos/upload/simple', {
+    method: 'POST',
+    body: form
+  })
+  const { data: record } = await resp.json()
+  // record.fileId     — 文件唯一标识，业务表中保存此值
+  // record.previewUrl — 预览签名 URL（10 分钟有效）
+  return record
+}
+```
+
+私有文件后续访问时，通过签名接口换取临时 URL：
+
+```javascript
+const resp = await fetch(`/micro-fileos/sign/url?fileId=${encodeURIComponent(record.fileId)}&expireMinutes=30`)
+const { data: url } = await resp.json()
+```
+
+## 4. 预签名直传流程（推荐）
 
 推荐使用预签名模式，文件由前端直传 OSS，不经过后端服务器。
 
@@ -143,7 +194,7 @@ const completeResp = await fetch('/micro-fileos/presign/complete', {
 const record = (await completeResp.json()).data
 ```
 
-## 3. 分片上传流程
+## 5. 分片上传流程
 
 适用于大文件（>50MB），将文件拆分为多个分片并行上传。
 
@@ -222,7 +273,7 @@ const completeResp = await fetch('/micro-fileos/presign/multipart/complete', {
 const record = (await completeResp.json()).data
 ```
 
-## 4. 断点续传流程
+## 6. 断点续传流程
 
 分片上传天然支持断点续传，核心思路是记录已完成的分片信息，恢复时跳过已上传的分片。
 
@@ -289,9 +340,9 @@ async function resumeUpload(file) {
 }
 ```
 
-## 5. 其他组件说明
+## 7. 其他组件说明
 
-### 5.1 FileosDirectoryBrowser — 目录浏览组件
+### 7.1 FileosDirectoryBrowser — 目录浏览组件
 
 用于浏览和管理文件目录结构，支持文件选择、预览和删除操作。
 
@@ -305,7 +356,7 @@ async function resumeUpload(file) {
 | `showPreview` | `boolean` | `true` | 是否显示文件预览 |
 | `onDelete` | `boolean` | `false` | 是否允许删除文件 |
 
-### 5.2 FileosImageUploader — 图片上传组件
+### 7.2 FileosImageUploader — 图片上传组件
 
 专门用于图片上传，带预览、裁剪、压缩功能。
 
@@ -326,7 +377,7 @@ async function resumeUpload(file) {
 | `listType` | `'text' \| 'picture' \| 'picture-card'` | `'picture-card'` | 文件列表展示样式 |
 | `disabled` | `boolean` | `false` | 是否禁用 |
 
-### 5.3 FileosDragUploader — 拖拽上传组件
+### 7.3 FileosDragUploader — 拖拽上传组件
 
 支持拖拽文件到区域上传，适用于批量文件上传场景。
 
@@ -345,7 +396,7 @@ async function resumeUpload(file) {
 | `dragAreaText` | `string` | `'将文件拖到此处，或点击上传'` | 拖拽区域提示文字 |
 | `dragAreaIcon` | `string` | — | 拖拽区域图标 |
 
-### 5.4 FileosChunkUploader — 大文件分片上传组件
+### 7.4 FileosChunkUploader — 大文件分片上传组件
 
 专门用于大文件上传，支持分片、断点续传。
 
@@ -365,9 +416,9 @@ async function resumeUpload(file) {
 | `showProgress` | `boolean` | `true` | 是否显示上传进度 |
 | `showSpeed` | `boolean` | `true` | 是否显示上传速度 |
 
-## 6. 前端完整使用示例
+## 8. 前端完整使用示例
 
-### 6.1 基础使用 — 简单文件上传
+### 8.1 基础使用 — 预签名直传
 
 ```javascript
 async function uploadSimpleFile(file) {
@@ -411,7 +462,7 @@ async function uploadSimpleFile(file) {
 }
 ```
 
-### 6.2 进阶使用 — 带进度显示的分片上传
+### 8.2 进阶使用 — 带进度显示的分片上传
 
 ```javascript
 const CHUNK_SIZE = 5 * 1024 * 1024
@@ -489,7 +540,7 @@ fileInput.addEventListener('change', async (e) => {
 })
 ```
 
-### 6.3 目录浏览示例
+### 8.3 目录浏览示例
 
 ```javascript
 // 加载目录树
@@ -514,7 +565,7 @@ async function getFileUrl(fileId, expireMinutes = 30) {
 }
 ```
 
-### 6.4 图片上传示例（带压缩和裁剪）
+### 8.4 图片上传示例（带压缩和裁剪）
 
 ```javascript
 async function uploadAvatar(file) {

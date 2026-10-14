@@ -243,7 +243,7 @@ volumes:
 #### 后端上传时指定
 
 ```java
-FileosUploadRequest request = new FileosUploadRequest();
+UploadSimpleReq request = new UploadSimpleReq();
 request.setCategory("avatar");
 request.setBucketName("my-bucket");
 request.setImageProcess("{\"resize\":{\"width\":200,\"height\":200,\"mode\":\"mfit\"}}");
@@ -253,7 +253,7 @@ fileosUploadApi.upload(file, request);
 #### 预签名上传时指定
 
 ```java
-PresignUploadRequest request = new PresignUploadRequest();
+PresignUploadReq request = new PresignUploadReq();
 request.setFileName("photo.jpg");
 request.setFileSize(file.length());
 request.setContentType("image/jpeg");
@@ -504,7 +504,7 @@ Bucket 配置使用阿里云内网 Endpoint：
 
 ```java
 // 上传时自动获取当前租户
-MdmFileosRecordDto dto = fileosUploadApi.upload(file, "business_type");
+RecordResp dto = fileosUploadApi.upload(file, "business_type");
 
 // 系统会根据当前登录用户的租户编码选择对应的 Bucket
 ```
