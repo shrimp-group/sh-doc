@@ -10,9 +10,9 @@ hero:
     src: /favicon.svg
     alt: Shrimp-Group
   actions:
-    - text: 框架
+    - text: 后端框架
       theme: brand
-      link: /framework
+      link: /backend-framework
     - text: 权限
       theme: alt
       link: /auth

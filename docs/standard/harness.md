@@ -41,7 +41,7 @@ docs/
 │   ├── frontend.md    # 前端规范
 │   ├── backend.md     # 后端规范
 │   └── harness.md     # Harness 工程规范
-├── framework/         # 框架文档
+├── backend-framework/ # 后端框架文档
 ├── auth/              # 权限模块文档
 ├── generator/         # 代码生成文档
 ├── micro/             # 微模块文档

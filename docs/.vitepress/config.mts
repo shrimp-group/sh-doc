@@ -31,7 +31,8 @@ export default withMermaid({
     nav: [
       {text: 'Home', link: '/'},
       {text: '规范', link: '/standard/'},
-      {text: '框架', link: '/framework/'},
+      {text: '后端框架', link: '/backend-framework/'},
+      {text: '前端框架', link: '/frontend-framework/'},
       {text: '权限', link: '/auth/'},
       {text: '代码生成', link: '/generator/'},
       {
@@ -89,20 +90,34 @@ export default withMermaid({
         },
       ],
       // 框架 - 每个页面独立 sidebar
-      '/framework/': [
+      '/backend-framework/': [
         {
-          text: '框架',
+          text: '后端框架',
           items: [
-            {text: '概述', link: '/framework/'},
-            {text: 'Parent 父工程', link: '/framework/parent'},
-            {text: 'BOM 物料清单', link: '/framework/bom'},
-            {text: 'Tool 工具模块', link: '/framework/tool'},
-            {text: 'Core 核心模块', link: '/framework/core'},
-            {text: 'ORM 持久框架', link: '/framework/orm'},
-            {text: 'Redis 缓存', link: '/framework/redis'},
-            {text: 'Web 增强模块', link: '/framework/web'},
-            {text: 'MQTT 消息队列', link: '/framework/mqtt'},
-            {text: 'Spring 偶合器', link: '/framework/spring'},
+            {text: '概述', link: '/backend-framework/'},
+            {text: 'Parent 父工程', link: '/backend-framework/parent'},
+            {text: 'BOM 物料清单', link: '/backend-framework/bom'},
+            {text: 'Tool 工具模块', link: '/backend-framework/tool'},
+            {text: 'Core 核心模块', link: '/backend-framework/core'},
+            {text: 'ORM 持久框架', link: '/backend-framework/orm'},
+            {text: 'DynamicDB 动态数据源', link: '/backend-framework/dynamicdb'},
+            {text: 'Redis 缓存', link: '/backend-framework/redis'},
+            {text: 'Web 增强模块', link: '/backend-framework/web'},
+            {text: 'MQTT 消息队列', link: '/backend-framework/mqtt'},
+            {text: 'Spring 扩展模块', link: '/backend-framework/spring'},
+            {text: 'XXL-Job 定时任务', link: '/backend-framework/xxljob'},
+          ]
+        },
+      ],
+      // 前端框架 - 每个页面独立 sidebar
+      '/frontend-framework/': [
+        {
+          text: '前端框架',
+          items: [
+            {text: '概述', link: '/frontend-framework/'},
+            {text: 'ui-core 核心包', link: '/frontend-framework/ui-core'},
+            {text: '示例工程', link: '/frontend-framework/demos'},
+            {text: '接入实践', link: '/frontend-framework/practice'},
           ]
         },
       ],
