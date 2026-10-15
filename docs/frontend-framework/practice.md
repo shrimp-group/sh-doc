@@ -126,6 +126,7 @@ export const runtimeEnv = {appCode, env, ...config}
 
 - `baseApi` 两种模式二选一，且全环境保持一致：相对路径 `/api`（同域反代，dev 走 vite 代理），或留空由域名推导出独立 API 域名。
 - 子系统的 `portal` 必须能解析出门户完整地址（local 显式配置，uat/prod 靠域名推导）；缺失或配错时，无 token 访问会跳向坏地址，表现为白屏或 404。
+- env.js 存在两种等价写法：**显式配置**（local/uat/prod 三环境全量写死域名，见 [ui-core.md](./ui-core) 与 app-demo）与**域名推导**（uat/prod 留空由 `deriveDomainUrl` 按当前域名推导，即本节写法）。同一工程全环境只用一种，不要混用；localhost / 纯 IP 访问无域名可推，两种写法下 local 环境都必须显式配置。
 
 ### 2.3 构建配置 vite.config.js
 
@@ -641,3 +642,4 @@ Cookie 域解析对 `localhost` / `127.0.0.1` 做了特殊处理：不设置 dom
 | 版本 | 日期 | 说明 |
 |------|------|------|
 | 1.0.0 | 2026-10 | 初始版本：基于门户 + 管理后台双应用落地实践整理，基线 `@sh/ui-core` 0.0.14 |
+| 1.1.0 | 2026-10 | 补充 env.js 两种配置模式（显式配置 / 域名推导）的取舍说明 |

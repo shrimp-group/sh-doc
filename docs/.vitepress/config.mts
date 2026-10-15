@@ -118,6 +118,7 @@ export default withMermaid({
             {text: 'ui-core 核心包', link: '/frontend-framework/ui-core'},
             {text: '示例工程', link: '/frontend-framework/demos'},
             {text: '接入实践', link: '/frontend-framework/practice'},
+            {text: '拆解指南', link: '/frontend-framework/split-guide'},
           ]
         },
       ],
