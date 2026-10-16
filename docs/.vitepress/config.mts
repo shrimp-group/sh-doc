@@ -4,6 +4,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid';
 export default withMermaid({
   title: "sh-doc",
   description: "Document",
+  ignoreDeadLinks: 'localhostLinks',
   head: [
     ['link', {rel: 'icon', href: '/favicon.svg'}],
     ['script', {}, `
