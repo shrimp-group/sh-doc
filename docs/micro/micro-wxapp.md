@@ -28,3 +28,8 @@ wx:
     appId: xxx
     secret: xxx
 ```
+
+### 申请测试号
+
+- 沙箱地址：https://developers.weixin.qq.com/miniprogram/dev/devtools/sandbox.html
+- 申请后获取 AppID 和 AppSecret，填入上方配置

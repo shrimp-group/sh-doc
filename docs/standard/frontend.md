@@ -134,6 +134,16 @@ components/
 - 使用 SCSS/SASS 变量管理颜色、字体等
 - 样式文件按组件组织
 
+## 表格展示规范
+
+管理后台表格（ElTable）展示遵循以下约定，`@sh/ui-core` 已内置部分默认行为：
+
+| 规则 | 说明 | ui-core 支撑 |
+| --- | --- | --- |
+| 单元格宽度 | 宽度需满足 90% 以上的文本直接完整展示 | TableColumn 默认 `showOverflowTooltip: true`，溢出内容自动悬浮提示 |
+| 日期展示 | 日期必须格式化后输出 | 全局方法 `parseTime(time, pattern)`；日期选择器已默认 `format` / `valueFormat` |
+| 枚举展示 | 枚举值必须经字典翻译后展示，禁止直接输出码值 | 全局组件 `DictTag`，全局方法 `useDict(...)` / `selectDictLabel(...)` |
+
 ## 性能优化
 
 ### 懒加载
