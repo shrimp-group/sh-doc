@@ -315,10 +315,9 @@ export default withMermaid({
           text: '商城',
           items: [
             {text: '概述', link: '/mall/'},
-            {text: '订单管理', link: '/mall/oms-admin'},
-            {text: '订单服务', link: '/mall/oms-admin-starter'},
-            {text: '商品管理', link: '/mall/pms-admin'},
-            {text: '商品服务', link: '/mall/pms-admin-starter'}
+            {text: '商品模块', link: '/mall/pms'},
+            {text: '订单模块', link: '/mall/oms'},
+            {text: '管理端前端', link: '/mall/pms-ui'}
           ]
         },
       ],
