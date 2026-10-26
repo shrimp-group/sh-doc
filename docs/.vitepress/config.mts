@@ -51,13 +51,14 @@ export default withMermaid({
           {text: '消息服务', link: '/micro/micro-msg'},
           {text: '支付服务', link: '/micro/micro-pay'},
           {text: 'PDF服务', link: '/micro/micro-pdf/'},
+          {text: '报表服务', link: '/micro/micro-report/'},
           {text: '关联检查', link: '/micro/micro-rmcheck'},
           {text: '序列服务', link: '/micro/micro-seq/'},
-          {text: '微信小程序', link: '/micro/micro-wxapp'},
           {text: '微信公众号', link: '/micro/micro-wxmp'},
         ]
       },
       {text: '商城', link: '/mall/'},
+      {text: '小程序', link: '/miniapp/'},
       {
         text: '关于',
         items: [
@@ -261,6 +262,17 @@ export default withMermaid({
           ]
         },
       ],
+      '/micro/micro-report/': [
+        {
+          text: '报表服务',
+          items: [
+            {text: '概述', link: '/micro/micro-report/'},
+            {text: '设计思路', link: '/micro/micro-report/design'},
+            {text: '功能集成', link: '/micro/micro-report/integration'},
+            {text: '使用指南', link: '/micro/micro-report/usage'},
+          ]
+        },
+      ],
       '/micro/micro-rmcheck': [
         {
           text: '微模块',
@@ -278,16 +290,23 @@ export default withMermaid({
           ]
         },
       ],
-      '/micro/micro-wxapp': [
-        {
-          text: '微模块',
-          items: [{text: '微信小程序', link: '/micro/micro-wxapp'}]
-        },
-      ],
       '/micro/micro-wxmp': [
         {
           text: '微模块',
           items: [{text: '微信公众号', link: '/micro/micro-wxmp'}]
+        },
+      ],
+      '/miniapp/': [
+        {
+          text: '小程序',
+          items: [
+            {text: '概述', link: '/miniapp/'},
+            {text: '设计思路', link: '/miniapp/design'},
+            {text: '功能集成', link: '/miniapp/integration'},
+            {text: '后端使用', link: '/miniapp/backend-usage'},
+            {text: '小程序端使用', link: '/miniapp/frontend-usage'},
+            {text: '微信底层能力', link: '/miniapp/wxapp'},
+          ]
         },
       ],
       // 商城 - 每个页面独立 sidebar
