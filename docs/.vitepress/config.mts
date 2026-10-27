@@ -34,7 +34,7 @@ export default withMermaid({
       {text: '规范', link: '/standard/'},
       {text: '后端框架', link: '/backend-framework/'},
       {text: '前端框架', link: '/frontend-framework/'},
-      {text: '权限', link: '/auth/'},
+      {text: '权限', link: '/iam/'},
       {text: '代码生成', link: '/generator/'},
       {
         text: '微模块',
@@ -125,19 +125,19 @@ export default withMermaid({
         },
       ],
       // 权限 - 每个页面独立 sidebar
-      '/auth/': [
+      '/iam/': [
         {
           text: '权限',
           items: [
-            {text: '概述', link: '/auth/'},
-            {text: '管理后台', link: '/auth/iam-admin'},
-            {text: '后台启动器', link: '/auth/iam-admin-starter'},
-            {text: '后台界面', link: '/auth/iam-admin-ui'},
-            {text: '公共模块', link: '/auth/iam-common'},
-            {text: '会话模块', link: '/auth/iam-session'},
-            {text: '门户登录', link: '/auth/iam-portal'},
-            {text: '登录启动器', link: '/auth/iam-portal-starter'},
-            {text: '登录界面', link: '/auth/iam-portal-ui'}
+            {text: '概述', link: '/iam/'},
+            {text: '管理后台', link: '/iam/iam-admin'},
+            {text: '后台启动器', link: '/iam/iam-admin-starter'},
+            {text: '后台界面', link: '/iam/iam-admin-ui'},
+            {text: '公共模块', link: '/iam/iam-common'},
+            {text: '会话模块', link: '/iam/iam-session'},
+            {text: '门户登录', link: '/iam/iam-portal'},
+            {text: '登录启动器', link: '/iam/iam-portal-starter'},
+            {text: '登录界面', link: '/iam/iam-portal-ui'}
           ]
         }
       ],
