@@ -46,10 +46,10 @@ flowchart TB
     spi --> custom
     pay["micro-pay 支付服务"] -- "PayOrderSpi 回调" --> spi
     custom -- "本地依赖" --> pms["PMS 商品 / 库存 / 卡券"]
-    rest -- "认证" --> iam["IAM SSO"]
+    rest -- "认证" --> iam["IAM Portal"]
 ```
 
-模块依赖：`iam-sso`（认证）、`sh-pms-admin`（商品/库存/卡券）、`micro-pay`（支付）、`micro-fileos`（文件签名）、`micro-points`。
+模块依赖：`iam-portal`（认证）、`sh-pms-admin`（商品/库存/卡券）、`micro-pay`（支付）、`micro-fileos`（文件签名）、`micro-points`。
 
 ## 订单生命周期
 
@@ -223,7 +223,7 @@ stateDiagram-v2
 </dependency>
 ```
 
-- `sh-oms-admin` 为业务模块，通过 Spring Boot 自动装配引入（`OmsAutoConfig`：扫描 `com.wkclz.oms` 包与 `com.wkclz.oms.mapper`），宿主应用需同时引入其依赖的 `iam-sso`、`sh-pms-admin`、`micro-pay` 等模块。
+- `sh-oms-admin` 为业务模块，通过 Spring Boot 自动装配引入（`OmsAutoConfig`：扫描 `com.wkclz.oms` 包与 `com.wkclz.oms.mapper`），宿主应用需同时引入其依赖的 `iam-portal`、`sh-pms-admin`、`micro-pay` 等模块。
 - `sh-oms-admin-starter` 为独立启动器，可将 OMS 作为独立服务部署（默认端口 8080）。
 
 ### 配置项
@@ -256,4 +256,4 @@ OMS 与支付通过 `micro-pay` 定义的 SPI 接口 `PayOrderSpi` 解耦：OMS 
 | PMS 卡券 | OMS → PMS | 本地依赖（`sh-pms-admin`） | `CouponService` 读取卡券与用户卡包、核销与退回 |
 | 积分 | OMS → 积分 | 本地计算 | `PointsService` 负责抵扣金额计算与订单项拆分（100 积分 = 1 元），积分账户操作随支付流程处理 |
 | 支付 | OMS ← 支付 | SPI 回调（`PayOrderSpi`） | 支付发起 / 成功 / 失败 / 退款 / 超时回调驱动订单状态流转，见 [支付服务](/micro/micro-pay) |
-| IAM | OMS → IAM | 本地依赖（`iam-sso`） | 用户身份、租户隔离 |
+| IAM | OMS → IAM | 本地依赖（`iam-portal`） | 用户身份、租户隔离 |

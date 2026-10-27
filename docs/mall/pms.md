@@ -50,7 +50,7 @@ flowchart LR
     F -.->|"分布式锁"| RD[(Redis)]
 ```
 
-管理端接口经 iam-sso 会话鉴权；图片与富文本内容由 fileos 签名后返回。
+管理端接口经 iam-portal 会话鉴权；图片与富文本内容由 fileos 签名后返回。
 
 ## 功能边界
 
@@ -243,7 +243,7 @@ flowchart LR
 说明：
 
 - 版本号由父 POM 的 `revision` 属性统一管理，当前为 `5.0.0-SNAPSHOT`
-- 传递依赖 `com.wkclz.iam:iam-sso`（会话与租户上下文）、`com.wkclz.microapp:micro-fileos`（图片与富文本签名 URL）
+- 传递依赖 `com.wkclz.iam:iam-portal`（会话与租户上下文）、`com.wkclz.microapp:micro-fileos`（图片与富文本签名 URL）
 - 模块通过 `PmsAutoConfig` 自动装配：`@ComponentScan("com.wkclz.pms")` 扫描业务组件，`@MapperScan("com.wkclz.pms.mapper")` 注册数据层，宿主应用无需额外配置
 - `sh-pms-admin-starter` 为独立启动模块（`IamAdminApplication`），仅用于将 PMS 作为独立服务运行，接入方无需引入
 
@@ -273,5 +273,5 @@ flowchart LR
 
 - **OMS（订单）**：PMS 通过 `OmsMapper` 跨模块查询 OMS 订单数据（`oms_order_group`、`oms_order_item`）。当前用于商品下架校验——商品存在近 2 天内进行中的拼团订单时禁止下架；另预留拼团 / 抢购销量统计查询。优惠券的发放、领取、兑换与过期在 PMS 完成，订单侧的用券与核销由 OMS 处理
 - **支付**：订单与支付流程见[支付服务](/micro/micro-pay)
-- **IAM**：管理端接口依赖 iam-sso 提供会话鉴权与租户上下文（tenantCode），商户数据按租户隔离
+- **IAM**：管理端接口依赖 iam-portal 提供会话鉴权与租户上下文（tenantCode），商户数据按租户隔离
 - **fileos**：商品图片、卡券 Logo 与富文本详情通过 fileos 签名后返回

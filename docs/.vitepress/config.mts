@@ -134,10 +134,10 @@ export default withMermaid({
             {text: '后台启动器', link: '/auth/iam-admin-starter'},
             {text: '后台界面', link: '/auth/iam-admin-ui'},
             {text: '公共模块', link: '/auth/iam-common'},
-            {text: '开发套件', link: '/auth/iam-sdk'},
-            {text: '单点登录', link: '/auth/iam-sso'},
-            {text: '登录启动器', link: '/auth/iam-sso-starter'},
-            {text: '登录界面', link: '/auth/iam-sso-ui'}
+            {text: '会话模块', link: '/auth/iam-session'},
+            {text: '门户登录', link: '/auth/iam-portal'},
+            {text: '登录启动器', link: '/auth/iam-portal-starter'},
+            {text: '登录界面', link: '/auth/iam-portal-ui'}
           ]
         }
       ],

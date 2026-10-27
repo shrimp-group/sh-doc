@@ -1,5 +1,18 @@
 # 权限模块  (建设中)
 
+## 模块组成
+
+| 模块 | 说明 |
+| ---- | ---- |
+| iam-admin | 管理后台：用户、角色、菜单等管理 |
+| iam-admin-starter | 管理后台独立启动器 |
+| iam-admin-ui | 管理后台前端界面 |
+| iam-common | 公共模块：实体、常量、工具 |
+| iam-session | 会话模块：会话管理、JWT Token、认证过滤器、请求控制 |
+| iam-portal | 门户登录：统一登录、注册、个人中心、菜单树 |
+| iam-portal-starter | 门户登录独立启动器 |
+| iam-portal-ui | 门户登录前端界面 |
+
 ## RBAC 模型
 
 RBAC（Role-Based Access Control，基于角色的访问控制）：权限与角色相关联，用户通过成为角色的成员而得到这些角色的权限。权限赋予角色，角色赋予用户，中间以角色为纽带，简化权限管理。
