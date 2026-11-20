@@ -41,6 +41,7 @@ export default withMermaid({
         items: [
           {text: '概述', link: '/micro/'},
           {text: '审计服务', link: '/micro/micro-audit/'},
+          {text: '业务编排', link: '/micro/micro-dag/'},
           {text: '字典服务', link: '/micro/micro-dict/'},
           {text: '文件服务', link: '/micro/micro-fileos/'},
           {text: '表单服务', link: '/micro/micro-form'},
@@ -174,6 +175,18 @@ export default withMermaid({
             {text: '设计思路', link: '/micro/micro-audit/design'},
             {text: '功能集成', link: '/micro/micro-audit/integration'},
             {text: '使用指南', link: '/micro/micro-audit/usage'},
+          ]
+        },
+      ],
+      '/micro/micro-dag/': [
+        {
+          text: '业务编排',
+          items: [
+            {text: '概述', link: '/micro/micro-dag/'},
+            {text: '设计思路', link: '/micro/micro-dag/design'},
+            {text: '功能集成', link: '/micro/micro-dag/integration'},
+            {text: '后端使用', link: '/micro/micro-dag/usage'},
+            {text: '编排运营指南', link: '/micro/micro-dag/operations'},
           ]
         },
       ],
