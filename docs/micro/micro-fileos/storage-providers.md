@@ -32,39 +32,39 @@
 
 ### 2.2 申请开通
 
-#### 1. 注册阿里云账号
+1. 访问 [阿里云官网](https://www.aliyun.com/) 注册账号并完成实名认证（个人或企业）
+2. 登录阿里云控制台，搜索"对象存储 OSS"，点击"立即开通"
+3. 选择计费方式（按量付费或资源包）
 
-1. 访问 [阿里云官网](https://www.aliyun.com/)
-2. 点击"免费注册"，完成账号注册
-3. 完成实名认证（个人或企业）
+> ⚠ 请全程使用具备管理权限的阿里云主账号操作。
 
-#### 2. 开通 OSS 服务
+### 2.3 创建 Bucket
 
-1. 登录阿里云控制台
-2. 搜索"对象存储 OSS"，进入产品页面
-3. 点击"立即开通"
-4. 选择计费方式（按量付费或资源包）
+1. 浏览器打开 OSS 管理控制台：<https://oss.console.aliyun.com/bucket>，登录阿里云账号。
+2. 点击 **【创建 Bucket】**，按以下信息填写：
 
-#### 3. 创建 Bucket
+| 配置项 | 填写内容 | 说明 |
+|---|---|---|
+| Bucket 名称 | 全局唯一（示例：pet-qianban-miniapp） | 若提示重名需重新讨论命名 |
+| 地域 | 与应用服务器（ECS）相同的地域 | 必须与 ECS 同地域，否则无法走内网访问 |
+| 其他配置 | 全部保持默认 | 存储类型（标准）、读写权限（私有）、版本控制等均不改动 |
 
-1. 进入 OSS 控制台
-2. 点击"创建 Bucket"
-3. 配置 Bucket 参数：
-   - Bucket 名称：全局唯一
-   - 区域：根据业务选择（建议与应用服务器同区域）
-   - 存储类型：标准存储（默认）
-   - 读写权限：私有（推荐）
+3. 点击 **【确定/创建】**完成创建。
+4. 创建完成后，进入该 Bucket 的 **【概览】**页面，找到 **【ECS 的 VPC 网络访问（内网）】**一栏（即内网 Endpoint，形如 `oss-cn-xxx-internal.aliyuncs.com`），**记录下来**。
 
-### 2.3 访问授权（按需授权）
+> ⚠ 内网 Endpoint 与外网 Endpoint 不同，请认准带「-internal」字样的那一行；该值在 Bucket 概览页的「访问端口 / Endpoint」区域可查到。
+
+### 2.4 访问授权（按需授权）
 
 不建议为 RAM 用户直接绑定阿里云预置的 OSS 全量授权策略，应遵循最小权限原则，仅授予业务所需 Bucket 的必要 Action。建议使用 RAM 子用户 AccessKey，而非主账号 AccessKey。
 
-创建自定义权限策略并生成 AccessKey 的步骤：
+进入 [RAM 访问控制台](https://ram.console.aliyun.com/overview)（与 OSS 控制台同一阿里云账号），依次完成以下 3 步。
 
-1. 进入 [RAM 控制台](https://ram.console.aliyun.com/)，选择"权限策略" → "创建权限策略"
-2. 选择"脚本编辑"，粘贴下方策略 JSON（将 `my-bucket` 替换为实际 Bucket 名称）
-3. 进入"用户"页面，为 RAM 用户绑定该权限策略
-4. 在 [AccessKey 管理页面](https://ram.console.aliyun.com/manage/ak) 为该 RAM 用户生成 AccessKey，获取 AccessKey ID 与 AccessKey Secret
+#### 1. 创建权限策略
+
+1. 左侧菜单选择 **【权限管理】→【权限策略】**，点击 **【创建权限策略】**。
+2. 选择 **【脚本编辑】**页签，将下方 JSON 完整粘贴进去（将 `my-bucket` 替换为实际 Bucket 名称，如 `pet-qianban-miniapp`）。
+3. 策略名称建议与 Bucket 名称保持一致（如 `pet-qianban-miniapp-policy`），便于识别，点击确定保存。
 
 最小权限策略 JSON 示例：
 
@@ -106,7 +106,31 @@ Action 说明：
 
 > 提示：如需多个 Bucket，将 Resource 中的 bucket 名替换或追加即可；预签名直传场景仅需上述 Action 即可。
 
-### 2.4 Endpoint 参考
+#### 2. 创建 RAM 用户
+
+1. 左侧菜单选择 **【身份管理】→【用户】**，点击 **【创建用户】**。
+2. 填写登录名称（示例：`pets-oss`，建议体现所属项目与用途），显示名称可填写用途说明。
+3. 访问方式勾选 **【使用永久 AccessKey 访问】**（不勾选控制台访问，该用户无需登录控制台）。
+4. 点击确定创建。创建成功后页面会展示该用户的 **AccessKey ID** 与 **AccessKey Secret**，请立即复制保存（Secret 仅此一次展示）。
+
+#### 3. 为用户绑定权限策略
+
+1. 在【用户】列表中找到该用户，点击右侧 **【添加权限】**（或进入用户详情页的【权限管理】页签）。
+2. 选择**自定义策略**，勾选上一步创建的权限策略，确定完成绑定。
+
+> ⚠ 若 AccessKey 未在创建页保存，可在【用户】详情页的【认证管理 / AccessKey】页签重新生成；每个用户最多保留 2 组 AccessKey。
+
+完成后需收集以下配置信息（配置方式见 [功能集成](./integration) 初始化配置章节）：
+
+| 序号 | 信息项 | 获取位置 |
+|---|---|---|
+| 1 | Bucket 内网 Endpoint | Bucket 概览 →【ECS 的 VPC 网络访问（内网）】，形如 `oss-cn-hangzhou-internal.aliyuncs.com` |
+| 2 | AccessKey ID | RAM 用户的 AccessKey（形如 `LTAI5t……`） |
+| 3 | AccessKey Secret | 创建 AccessKey 时一次性展示的 Secret |
+
+> ⚠ 安全提醒：AccessKey Secret 属于敏感凭据，等同于账号密码。请勿在公开群聊、截图中传播，建议通过私密渠道回传。仅将其配置在服务器环境变量中使用，不写入代码仓库。
+
+### 2.5 Endpoint 参考
 
 | 区域 | 内网 Endpoint | 外网 Endpoint |
 |------|--------------|--------------|
@@ -116,7 +140,7 @@ Action 说明：
 | 华北2（北京） | `https://oss-cn-beijing-internal.aliyuncs.com` | `https://oss-cn-beijing.aliyuncs.com` |
 | 华南1（深圳） | `https://oss-cn-shenzhen-internal.aliyuncs.com` | `https://oss-cn-shenzhen.aliyuncs.com` |
 
-### 2.5 注意事项
+### 2.6 注意事项
 
 - 阿里云 OSS 使用 V4 签名，需确保 SDK 版本兼容
 - 内网 Endpoint 仅在阿里云 ECS 同区域时可用，否则请使用外网 Endpoint
