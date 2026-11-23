@@ -1,6 +1,6 @@
 # 功能集成
 
-Micro-Dag 是嵌入式轻量分布式业务编排引擎（DAG），提供流程定义与发布、实例发起、分布式对等调度（CAS 领取 + 租约故障转移）、失败自动重试（FIXED/EXPONENTIAL 退避）、人工干预治理（中断/改参/跳过/重置/重跑/从节点重跑/终止）、自研分支表达式引擎、节点分类（SYSTEM/DEMO/BUSINESS）与开始节点时间驱动（cron 定时发起实例）等能力。
+Micro-Dag 是嵌入式轻量分布式业务编排引擎（DAG），提供流程与版本管理、实例发起、分布式对等调度（CAS 领取 + 租约故障转移）、失败自动重试（FIXED/EXPONENTIAL 退避）、人工干预治理（中断/改参/跳过/重置/重跑/从节点重跑/终止）、自研分支表达式引擎、节点分类（SYSTEM/DEMO/BUSINESS）与开始节点时间驱动（cron 定时发起实例）等能力。
 
 ## 添加依赖
 
@@ -17,14 +17,15 @@ Micro-Dag 是嵌入式轻量分布式业务编排引擎（DAG），提供流程�
 
 ## 数据库初始化
 
-模块不自动建表，需在 MySQL 8 目标库执行建表脚本 `micro-dag/sql/dag_init.sql`，共 6 张表（utf8mb4）：
+模块不自动建表，需在 MySQL 8 目标库执行建表脚本，共 7 张表（utf8mb4）。建表 DDL 以 micro-dag 仓库 docs/tasks/micro-dag/01-sql.md 为准（micro-dag/sql/dag_init.sql 未随工程落盘）。
 
 | 表名 | 用途 |
 |------|------|
-| dag_definition | 流程定义主表（dagCode、dagName、dagVersion、状态 DRAFT/PUBLISHED/OFFLINE） |
-| dag_node | 定义节点（一行一节点，含 handler、重试/超时配置、params_json、画布坐标 pos_x/pos_y） |
-| dag_edge | 定义边（一行一边，含类型 NORMAL/CONDITION 与条件表达式 when_expr） |
-| dag_instance | 流程实例（instance_code、trace_code、锁定定义版本、上下文与发起参数） |
+| dag_process | 流程主表（dagCode 唯一、dagName 唯一持有，历史版本显示当前名称） |
+| dag_process_version | 流程版本（dagVersion：草稿固定 0，发布递增为历史最大版本+1；状态 DRAFT/PUBLISHED） |
+| dag_node | 版本节点（一行一节点，含 handler、重试/超时配置、params_json、画布坐标 pos_x/pos_y） |
+| dag_edge | 版本边（一行一边，含类型 NORMAL/CONDITION 与条件表达式 when_expr） |
+| dag_instance | 流程实例（instance_code、trace_code、锁定流程版本、上下文与发起参数） |
 | dag_node_instance | 节点实例（核心表：七态状态、attempt、租约、中断/清理标记、输入输出） |
 | dag_execution_log | 执行记录（事件明细 detail_json、过程日志 log_text、执行机器 worker） |
 
@@ -35,7 +36,9 @@ ALTER TABLE dag_execution_log MODIFY detail_json JSON;
 ALTER TABLE dag_execution_log ADD COLUMN log_text TEXT COMMENT '过程日志内容(NODE_LOG 专用)';
 ```
 
-迁移前需校验存量 `detail_json` 均为合法 JSON（现存写入方均为 toJson 产出或 null）；另执行 `ALTER TABLE dag_node ADD COLUMN node_type varchar(16) NOT NULL DEFAULT 'NORMAL' COMMENT '节点类型 NORMAL/START/END/BRANCH';` 补齐节点类型列。
+迁移前需校验存量 `detail_json` 均为合法 JSON（现存写入方均为 toJson 产出或 null）；另执行 `ALTER TABLE dag_node ADD COLUMN node_type varchar(16) NOT NULL DEFAULT 'NORMAL' COMMENT '节点类型 NORMAL/START/END/BRANCH';` 补齐节点类型列。旧 dag_definition 表已废弃，由 dag_process/dag_process_version 替代（存量数据需按流程/版本拆分迁移）。
+
+**演示数据**：执行 sql/dag_demo.sql 可一键灌入 14 条全场景演示流程（幂等可重复执行，先清理 dag_demo_% 前缀旧数据再重灌），覆盖最小链路、条件边、分支、并行汇聚、失败级联跳过、重试与退避、超时、cron 定时发起、人工干预、改参重跑、从指定节点重跑等场景；配合 dag.demo-enabled=true 使用，教程见 micro-dag 仓库 docs/living-docs-technical/modules/micro-dag-demo-tutorial.md。
 
 ## 实现 NodeHandler
 
@@ -158,7 +161,7 @@ public List<NodeParamDef> paramSchema() {
 
 ### 系统 Handler（SYSTEM，永久生效）
 
-`handler/system` 包内置 4 个系统 handler，无条件注册（不受 `dag.demo-enabled` 影响），category=SYSTEM。START/END/BRANCH 节点统一走 worker 执行链路；存量定义（特殊节点无 handler）由调度器领取后直达成功兼容。
+`handler/system` 包内置 4 个系统 handler，无条件注册（不受 `dag.demo-enabled` 影响），category=SYSTEM。START/END/BRANCH 节点统一走 worker 执行链路；存量流程版本（特殊节点无 handler）由调度器领取后直达成功兼容。
 
 | nodeCode | 名称 | 说明 | 入参 | 输出 |
 |---|---|---|---|---|
@@ -175,7 +178,8 @@ START 节点 params 配置触发方式（缺省 MANUAL 手动发起）：
 {"triggerType": "TIMER", "cron": "0 0 2 * * *", "triggerParams": {"bizKey": "value"}}
 ```
 
-- `DagTriggerScheduler` 轮询 PUBLISHED 定义（`dag.trigger.interval-ms`），cron（Spring 6 域）到点自动发起实例
+- `DagTriggerScheduler` 轮询 PUBLISHED 流程版本（`dag.trigger.interval-ms`），cron（Spring 6 域）到点自动发起实例
+- 无 TIMER 触发的流程按 dagVersion 负缓存，仅版本变更时重新加载
 - 幂等：traceCode = `TIMER-{dagCode}-v{version}-{触发时间}`，同一触发点仅发起一个实例；Redis 锁防集群竞争
 - 语义：停机期间错过的历史槽位不补触发，仅补触发最近一个到期槽位；触发状态内存态，重启自动重建
 - `dag.enabled=false` 或 `dag.trigger.enabled=false` 时触发器不运行，手动发起不受影响
@@ -183,7 +187,7 @@ START 节点 params 配置触发方式（缺省 MANUAL 手动发起）：
 
 ### Demo Handler（DEMO，可选）
 
-`handler/demo` 包内置 5 个演示 handler（category=DEMO），`dag.demo-enabled=true` 时注册到设计器 handler 列表，默认关闭不注册（业务接入时不注册 demo 节点）。
+`handler/demo` 包内置 6 个演示 handler（category=DEMO），`dag.demo-enabled=true` 时注册到设计器 handler 列表，默认关闭不注册（业务接入时不注册 demo 节点）。
 
 | nodeCode | 名称 | 入参 | 输出 |
 |---|---|---|---|
@@ -192,21 +196,23 @@ START 节点 params 配置触发方式（缺省 MANUAL 手动发起）：
 | demo-transform | 演示-数据转换 | 任意 | 入参合并 + `processedAt` |
 | demo-http-call | 演示-HTTP调用 | url（必填）、method、headers、body | `{status, body}`（body 截断 2000 字符） |
 | demo-script-exec | 演示-JS脚本 | script（定义 `handle(input)`）、input（缺省为全部入参） | handle 返回对象原样输出，标量包装为 `{result}` |
+| demo-fail | 演示-可控失败 | failTimes（前 N 次失败，缺省 0）、msg（缺省 simulated failure） | 前 N 次 `{attempt, msg}` 失败进入 RETRYING，之后 `{attempt, msg: success}` 成功并回填 trace_code；演示显式失败、过程日志与 trace 回填 |
 
 GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过注册；GraalJS 版本须与运行 JDK 匹配（23.x 不兼容 JDK 25）。
 
 ## 前端接入
 
-前端为独立工程 `sh-dag-ui`（Vue 3 + Vite + Element Plus + AntV X6 + Monaco Editor，appCode=dag），通过 `/handler/list`、定义与实例 REST 接口与后端交互，可独立部署或并入管理端。
+前端为独立工程 `sh-dag-ui`（Vue 3 + Vite + Element Plus + AntV X6 + Monaco Editor，appCode=dag），通过 `/handler/list`、流程/版本与实例 REST 接口与后端交互，可独立部署或并入管理端。
 
 | 页面/组件 | 说明 |
 |------|------|
-| DagDefinitionList | 流程定义分页列表（查询/新建/设计/复制/发布），设计动作经全屏弹窗内嵌设计器 |
-| DagDesigner | 纯设计器（左信息栏[编码/必填名称] / 左 handler 面板 / 中画布[自动布局悬浮] / 右属性面板），保存/发布/关闭为全局按钮固定右下角 |
+| DagProcessList | 流程分页列表（一条流程一条记录：聚合状态 编辑中/已发布、最新版本列；查询/新建/设计/历史版本；无草稿时以最新已发布版本为底稿打开设计器，保存/发布按钮位于设计器弹窗底部） |
+| DagDesigner | 纯设计器（左信息栏[编码/必填名称] / 左 handler 面板 / 中画布[左右/上下布局悬浮按钮] / 右属性面板），保存/发布/关闭按钮位于设计器弹窗底部 |
+| VersionHistoryDialog | 版本历史弹窗：流程全部版本列表（草稿显示「草稿」、发布版本显示 vN），「查看」打开全屏只读画布回看历史版本 |
 | DagGraph | X6 画布封装：节点左右端口磁吸连线（仅 out→in）、拖动坐标实时回写、拖入与连线均为增量操作；readonly 模式节点保持类型配色，执行状态经右上角标圆点 + 中文状态文字呈现 |
 | NodeParamsEditor / ParamsKeyValue / ExpressionEditor | 按 paramSchema 渲染参数表单（表单/JSON 双模式）、KEY_VALUE 编辑器、分支表达式编辑器 |
 | DagInstanceList | 实例分页列表（查询/发起/详情/终止），状态中文展示，不做定时刷新（关闭详情弹窗后刷新） |
 | DagInstanceDetail | 实例详情：节点七态色板着色 + 画布状态图例，点击节点经气泡展示概要与干预操作（中断/跳过/重置/重跑） |
 | NodeDetailDrawer | 执行记录时间线弹窗（事件枚举中文展示） |
 
-接入方式：将 sh-dag-ui 构建产物按独立应用部署，或复制 `src/views/dag` 与 `src/api` 目录下的组件/接口封装到现有管理端工程，菜单指向定义列表与实例列表页面即可。
+接入方式：将 sh-dag-ui 构建产物按独立应用部署，或复制 `src/views/dag` 与 `src/api` 目录下的组件/接口封装到现有管理端工程，菜单指向流程列表与实例列表页面即可。组件按目录组织：designer/（设计器与属性面板）、monitor/（实例列表/详情/执行记录）、history/（版本历史）。

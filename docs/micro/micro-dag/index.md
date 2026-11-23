@@ -1,10 +1,10 @@
 # 业务编排引擎
 
-Micro-Dag 是嵌入式轻量分布式 DAG 编排引擎，基于 Spring Boot 实现，随宿主应用启动，无独立 server。提供流程定义与发布、实例发起、分布式对等调度（CAS 领取 + 租约故障转移）、失败自动重试、人工干预治理等编排全生命周期能力，业务方只需实现 `NodeHandler` 并注册为 Spring Bean 即可被编排引用。Maven 坐标为 `com.wkclz.microapp:micro-dag`，配套前端图形编排工作台 `sh-dag-ui`（基于 AntV X6 画布的图形化设计器与实例监控视图）。
+Micro-Dag 是嵌入式轻量分布式 DAG 编排引擎，基于 Spring Boot 实现，随宿主应用启动，无独立 server。提供流程与版本管理（草稿/发布两态、发布递增版本、历史版本查看）、实例发起、分布式对等调度（CAS 领取 + 租约故障转移）、失败自动重试、人工干预治理等编排全生命周期能力，业务方只需实现 `NodeHandler` 并注册为 Spring Bean 即可被编排引用。Maven 坐标为 `com.wkclz.microapp:micro-dag`，配套前端图形编排工作台 `sh-dag-ui`（基于 AntV X6 画布的图形化设计器与实例监控视图）。
 
 ## 功能特性
 
-- **流程定义与发布**：DAG 定义版本化管理（DRAFT/PUBLISHED/OFFLINE 三态），发布时递增版本号、执行结构校验（含 Kahn 环检测），实例发起时锁定 PUBLISHED 定义版本运行，支持定义复制为新草稿
+- **流程与版本管理**：流程（dag_process）与版本（dag_process_version）两级模型，草稿固定 dagVersion=0、发布时递增为历史最大版本+1 并重挂节点/边，执行结构校验（含 Kahn 环检测），实例锁定 PUBLISHED 版本运行，同一流程至多一个编辑中草稿，历史版本只读回看
 - **分布式对等调度**：多实例对等竞争，DB 乐观锁 CAS 领取防重复执行，租约（lease）机制实现节点故障自动转移，无需中心调度器
 - **失败自动重试**：节点级最大重试次数与间隔配置，支持 FIXED 固定间隔与 EXPONENTIAL 指数退避两种策略，到期由调度自动提升
 - **人工干预治理**：中断（协作式，跨机广播）、改参、跳过、重置、节点重跑、从指定节点重跑、实例终止等全套治理操作，操作留痕于执行记录
@@ -24,7 +24,7 @@ Micro-Dag 是嵌入式轻量分布式 DAG 编排引擎，基于 Spring Boot 实�
 ## 技术栈
 
 - Java 25 / Spring Boot 4.x
-- MyBatis（六张 `dag_` 前缀表，乐观锁 + 逻辑删除）
+- MyBatis（七张 `dag_` 前缀表，乐观锁 + 逻辑删除）
 - Redis（Pub/Sub 调度唤醒与中断广播、分布式锁防触发竞争）
 - GraalJS（demo 脚本节点依赖，optional，可选）
 - AntV X6（前端编排画布，sh-dag-ui 独立工程）

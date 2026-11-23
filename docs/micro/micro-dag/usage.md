@@ -1,23 +1,29 @@
 # 后端使用
 
-Micro-Dag 提供流程定义、元能力（handler 列表与表达式试算）、实例与节点干预四组 REST 接口，前缀统一为 `/micro-dag`，路径以 `rest/Route.java` 常量为准。所有接口返回 `R<T>` 统一响应结构（`code`/`msg`/`data`/`requestTime`，成功 `code=200`）。
+Micro-Dag 提供流程与版本、元能力（handler 列表与表达式试算）、实例与节点干预四组 REST 接口，前缀统一为 `/micro-dag`，路径以 `rest/Route.java` 常量为准。所有接口返回 `R<T>` 统一响应结构（`code`/`msg`/`data`/`requestTime`，成功 `code=200`）。
 
-- 定义生命周期：DRAFT（可编辑）→ PUBLISHED（发布版本递增，实例锁定版本）→ 复制为新 DRAFT 草稿再编辑
+- 流程与版本：POST /process/create 新建流程（主表 + v0 草稿）→ version/update 编辑草稿 → version/publish 发布（版本递增，实例锁定版本）；已发布版本不可编辑，变更以最新已发布版本为底稿 version/create 建新草稿
 - 实例七态节点状态：PENDING / RUNNING / SUCCESS / FAILED / RETRYING / SKIPPED / MANUAL_STOPPED
 - 实例五态：RUNNING / SUCCESS / FAILED / STOPPED / TERMINATED
 
 ## API 总览
 
-### 流程定义
+### 流程
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | /micro-dag/definition/create | 创建定义草稿（后端生成 dagCode，返回定义 id 与 dagCode） |
-| POST | /micro-dag/definition/update | 编辑 DRAFT 草稿（节点/边全量覆盖，返回定义 id） |
-| POST | /micro-dag/definition/publish | 发布定义（全量校验 + 版本递增，返回发布版本号） |
-| GET | /micro-dag/definition/page | 定义分页查询 |
-| GET | /micro-dag/definition/detail | 定义详情（元信息 + 节点/边） |
-| POST | /micro-dag/definition/copy | 复制为新版本草稿（版本归零，返回新草稿 id） |
+| GET | /micro-dag/process/page | 流程分页（含版本状态聚合：EDITING/PUBLISHED、draftId、latestVersion、latestPublishedId） |
+| POST | /micro-dag/process/create | 新建流程（后端生成 dagCode，创建 v0 草稿，返回 id 与 dagCode） |
+
+### 流程版本
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /micro-dag/process/version/create | 基于已有流程创建草稿（草稿 dagVersion=0，返回草稿版本 id） |
+| POST | /micro-dag/process/version/update | 保存草稿（节点/边全量覆盖，同步主表名称） |
+| POST | /micro-dag/process/version/publish | 发布版本（全量校验 + 版本递增，返回发布版本号） |
+| GET | /micro-dag/process/version/detail | 版本详情（元信息 + 节点/边，dagName 取主表当前名称） |
+| GET | /micro-dag/process/version/list | 历史版本列表（按 dagVersion 倒序） |
 
 ### 元能力
 
@@ -47,14 +53,14 @@ Micro-Dag 提供流程定义、元能力（handler 列表与表达式试算）�
 | POST | /micro-dag/node/reset | 重置节点为 PENDING（非运行态，不自动触发调度） |
 | POST | /micro-dag/node/rerun | 重跑单节点（reset + 清理钩子判定 + 实例回 RUNNING） |
 
-## 流程定义
+## 流程与版本管理
 
-典型流程：`create` 创建草稿（后端生成 `dag_` 前缀编码）→ `update` 编辑节点与边 → `publish` 发布；已发布定义不可编辑，需 `copy` 复制为新草稿再修改。
+典型流程：`process/create` 新建流程（一次提交 dagName+nodes+edges，主表生成 `dag_` 前缀编码并创建 v0 草稿）→ `version/update` 迭代草稿 → `version/publish` 发布；已发布版本不可编辑，变更时以最新已发布版本为底稿调 `version/create` 建新草稿。
 
-### 创建定义
+### 新建流程
 
 ```http
-POST /micro-dag/definition/create
+POST /micro-dag/process/create
 Content-Type: application/json
 
 {
@@ -94,19 +100,46 @@ Content-Type: application/json
 
 ### 编辑与发布
 
-`update` 仅 DRAFT 可编辑（节点/边全量覆盖重建），请求体在创建基础上增加 `id`；`publish` 仅 DRAFT 可发布，发布时执行全量校验并要求存在起始节点（无上游的节点），发布成功后版本号在历史最大版本上递增：
+`version/update` 仅 DRAFT 可改（节点/边全量覆盖，并同步主表流程名称），请求体为 `{ id: 草稿版本 id, dagName, nodes, edges }`；`data` 返回草稿版本 id：
 
 ```http
-POST /micro-dag/definition/publish?id=1
+POST /micro-dag/process/version/update
+Content-Type: application/json
+
+{ "id": 2, "dagName": "订单数据处理", "nodes": [...], "edges": [...] }
+```
+
+`version/publish` 仅 DRAFT 可发布，发布时执行全量校验并要求存在起始节点（无上游的节点），版本号取该 dagCode 历史最大版本 + 1，节点/边行先删后按新版本重挂：
+
+```http
+POST /micro-dag/process/version/publish?id=1
 ```
 
 ```json
 { "code": 200, "msg": "Success", "data": 1, "requestTime": "2026-11-20 10:01:00" }
 ```
 
-`data` 为发布后的定义版本号（Integer）。发布失败时 `msg` 返回校验错误明细（多条以 `; ` 拼接）。
+`data` 为发布后的版本号（Integer）。发布失败时 `msg` 返回校验错误明细（多条以 `; ` 拼接）。
 
-分页与详情为 GET 查询：`/definition/page?dagName=订单&status=PUBLISHED&current=1&size=10`；`/definition/detail?id=1` 返回 `DefinitionResp`（id/dagCode/dagName/dagVersion/status/nodes/edges/remark/createTime/updateTime）。
+流程分页与版本查询为 GET：
+
+```http
+GET /micro-dag/process/page?dagName=订单&current=1&size=10
+```
+
+返回 `ProcessPageResp` 列表（id/dagCode/dagName/updateTime + 版本状态聚合）：`status` 为聚合状态（EDITING=有草稿 / PUBLISHED=无草稿有发布版本，全新流程也按 PUBLISHED 展示）、`draftId`（草稿版本 id，无草稿 null）、`latestVersion`（最新已发布版本号，无则 null）、`latestPublishedId`（最新已发布版本 id，无则 null）。过滤参数支持 `dagCode` 精确、`dagName` 模糊。
+
+```http
+GET /micro-dag/process/version/detail?id=1
+```
+
+返回 `ProcessVersionDetailResp`（id/dagCode/dagName/dagVersion/status/nodes/edges，`dagName` 取主表当前名称）：
+
+```http
+GET /micro-dag/process/version/list?dagCode=dag_8FJ2K3M4Q5
+```
+
+返回历史版本列表 `ProcessVersionResp`（id/dagCode/dagVersion/status/updateTime，按 dagVersion 倒序，草稿 dagVersion=0 显示在前）。
 
 ## 发起实例
 
@@ -253,3 +286,4 @@ Content-Type: application/json
 3. **幂等**：traceCode 全局唯一校验在 launch 时执行；表达式与调度推进汇合于 DB CAS，重复回调天然幂等
 4. **重试语义**：节点失败且 attempt ≤ maxRetry 进入 RETRYING，按 intervalSec + backoff（FIXED/EXPONENTIAL）计算 next_retry_time，到期由调度提升；超出重试次数置 FAILED 并联动实例 FAILED
 5. **级联跳过**：分支条件不满足的下游节点置 SKIPPED；仅当上游全部为确定性不满足（FAILED/MANUAL_STOPPED/链式 SKIPPED/条件求值 false）时级联，上游未定状态（PENDING/RUNNING/RETRYING）不参与跳过
+6. **草稿唯一**：唯一索引 uk_code_version 保证同一流程至多一个编辑中草稿，并发创建草稿时后抛 ValidationException（已有编辑中草稿，请刷新列表）

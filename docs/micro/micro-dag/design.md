@@ -1,15 +1,15 @@
 # 设计思路
 
-micro-dag 是嵌入式轻量分布式 DAG 编排引擎，核心设计理念：**定义静态化、调度对等化、状态推进幂等化**。流程定义（节点 + 边 + 参数）静态存储并版本化发布，实例发起时快照为节点实例集合；调度不依赖中心节点，多宿主实例对等竞争领取任务；全部状态迁移汇合于数据库 CAS 更新，天然幂等，事件与轮询只是两种"触发时机"，不是两套状态逻辑。
+micro-dag 是嵌入式轻量分布式 DAG 编排引擎，核心设计理念：**定义静态化、调度对等化、状态推进幂等化**。流程版本（节点 + 边 + 参数）静态存储并版本化发布，实例发起时快照为节点实例集合；调度不依赖中心节点，多宿主实例对等竞争领取任务；全部状态迁移汇合于数据库 CAS 更新，天然幂等，事件与轮询只是两种"触发时机"，不是两套状态逻辑。
 
 ## 整体架构
 
-引擎随宿主应用启动（`DagAutoConfig` 自动装配，无独立 server），由定义服务、调度、执行、推进引擎、人工干预五个运行组件与两个调度旁路（时间驱动触发器、过程日志 flusher）构成。MySQL 是唯一事实源，Redis Pub/Sub 仅作加速通道（唤醒与中断广播）。
+引擎随宿主应用启动（`DagAutoConfig` 自动装配，无独立 server），由流程与版本服务、调度、执行、推进引擎、人工干预五个运行组件与两个调度旁路（时间驱动触发器、过程日志 flusher）构成。MySQL 是唯一事实源，Redis Pub/Sub 仅作加速通道（唤醒与中断广播）。
 
 ```mermaid
 flowchart TB
     subgraph HOST["宿主应用（嵌入式）"]
-        DEF["DagDefinitionService<br/>定义 create/update/publish/copy"]
+        DEF["DagProcessService / DagProcessVersionService<br/>流程新建/分页聚合 · 版本 createDraft/updateDraft/publish"]
         VAL["DagValidator + DagReadyCalculator<br/>结构校验 / 就绪与级联跳过计算（纯函数）"]
         SCH["DagScheduler<br/>scan：就绪判定 + casClaim 唯一领取入口"]
         WRK["DagWorkerExecutor<br/>双线程池执行 handler<br/>租约续期 / 超时 / 过程日志 flusher"]
@@ -17,7 +17,7 @@ flowchart TB
         INT["DagInterventionService<br/>中断/改参/跳过/重置/重跑/终止"]
         TRG["DagTriggerScheduler<br/>START 节点 cron 时间驱动"]
     end
-    DB[("MySQL<br/>dag_definition / dag_node / dag_edge<br/>dag_instance / dag_node_instance / dag_execution_log")]
+    DB[("MySQL<br/>dag_process / dag_process_version / dag_node / dag_edge<br/>dag_instance / dag_node_instance / dag_execution_log")]
     RD[("Redis Pub/Sub<br/>sh:micro:dag:wakeup / sh:micro:dag:interrupt")]
     DEF --> DB
     SCH --> DB
@@ -34,24 +34,27 @@ flowchart TB
 
 | 组件 | 职责 |
 |------|------|
+| DagProcessService | 流程域：新建流程（主表插行 + 创建 v0 草稿）、流程分页（按 dagCode 聚合版本状态 EDITING/PUBLISHED 与 draftId/latestVersion/latestPublishedId） |
+| DagProcessVersionService | 版本域：load（运行时装配共用入口）、createDraft/updateDraft/publish/detail/versionList |
 | DagScheduler | 调度循环（`@Scheduled` 轮询兜底 + `wakeUp()` 事件唤醒），单轮执行 promoteRetrying → 租约回收 → 逐 RUNNING 实例就绪计算 → batchSize 限流 CAS 领取 → 提交 worker。`scan()` 方法 `synchronized` 串行，CAS 领取是任务执行的唯一入口，防重复执行 |
 | DagWorkerExecutor | 节点执行器，双线程池设计：`dag-worker` 池跑 handler，`dag-supervisor` 监督线程只做等待与结果派发（租约续期在独立的单线程 `dag-lease` 池），避免"等待者占满工作线程"饿死。负责租约续期、超时控制、中断协作、traceCode 回填、结果五路派发 |
 | DagEngineService | 推进引擎，节点成功/失败/中断回调落库（`mustRunning` 防重投递）→ 级联跳过 → 实例终态判定 → Redis 唤醒调度 |
 | DagReadyCalculator | 就绪计算、级联跳过计算、实例终态计算的纯函数集合，无状态，调度与推进两侧共用同一套判定逻辑 |
 | DagExpressionEvaluator | 自研分支表达式引擎，递归下降文法，无第三方依赖 |
 | DagRetryCalculator | 重试间隔计算：FIXED 固定，EXPONENTIAL 第 n 次 = intervalSec × 2^(n-1)（封顶 2^20 防溢出） |
-| DagValidator | 定义校验器，返回问题清单（面向设计器展示）不抛异常；发布时由定义服务转为校验失败 |
+| DagValidator | 定义校验器，返回问题清单（面向设计器展示）不抛异常；发布时由版本服务转为校验失败 |
 | DagInterventionService | 人工干预治理：interrupt / params / skip / reset / rerun / rerun-from / terminate |
-| DagTriggerScheduler | START 节点时间驱动触发器，轮询 PUBLISHED 定义，cron 到点自动 launch |
+| DagTriggerScheduler | START 节点时间驱动触发器，轮询 PUBLISHED 流程版本，cron 到点自动 launch |
 | DagRedisPublisher / DagWakeupListener / DagInterruptListener | Redis 广播收发：完成事件唤醒调度、跨机中断请求（payload = `instanceCode:nodeCode`） |
 
 ## 数据模型
 
-六张 `dag_` 前缀表，均继承 BaseEntity（`version` 乐观锁、`deleted` 逻辑删除、`create_by`/`update_by` 自动填充）：
+七张 `dag_` 前缀表，均继承 BaseEntity（`version` 乐观锁、`deleted` 逻辑删除、`create_by`/`update_by` 自动填充）：
 
 | 实体 | 表名 | 关键字段 |
 |------|------|----------|
-| DagDefinition | dag_definition | dagCode、dagName、dagVersion（发布递增）、status（DRAFT/PUBLISHED/OFFLINE） |
+| DagProcess | dag_process | dagCode（唯一）、dagName（名称唯一持有于主表，历史版本显示当前名称） |
+| DagProcessVersion | dag_process_version | dagCode + dagVersion（草稿固定 0，发布重挂为历史最大版本+1）、status（DRAFT/PUBLISHED） |
 | DagNode | dag_node | dagCode + dagVersion、nodeCode、nodeType（NORMAL/START/END/BRANCH）、handler、timeoutMs、maxRetry、intervalSec、backoff、paramsJson、posX/posY（画布坐标） |
 | DagEdge | dag_edge | dagCode + dagVersion、edgeCode、fromCode → toCode、type（NORMAL/CONDITION）、whenExpr（条件表达式） |
 | DagInstance | dag_instance | instanceCode（模块内生成）、traceCode（唯一跟踪编码，可运行期回填）、dagCode + dagVersion（发起时锁定版本）、status（RUNNING/SUCCESS/FAILED/STOPPED/TERMINATED）、contextJson（流程上下文）、bizParamsJson（发起参数） |
@@ -60,7 +63,7 @@ flowchart TB
 
 要点：
 
-- **定义按版本组织**：同一 dagCode 可存在多行定义（不同 dagVersion），`dagCode + dagVersion` 唯一定位一组节点与边；实例发起时锁定 PUBLISHED 最大版本，运行期不受后续发布影响。
+- **流程与版本两级**：同一 dagCode 的名称唯一持有于 dag_process 主表；dag_process_version 按版本组织节点与边，唯一索引 uk_code_version 保证同一流程至多一个编辑中草稿（并发创建由 DuplicateKeyException 拦截）；实例发起时锁定 PUBLISHED 最大版本，运行期不受后续发布影响。
 - **节点实例是定义快照**：重试策略、超时等执行属性发起时从定义拷入节点实例，人工改参（`/node/params`）直接修改节点实例的 inputParamsJson，重跑时生效。
 - **traceCode 唯一**：launch 时应用层查重校验（重复即拒绝），保证定时触发等场景以 traceCode 为幂等键；节点执行结果也可携带 traceCode 回填实例（仅当实例 traceCode 为空时生效）。
 - **执行记录是节点审计流**：每次状态迁移、干预操作、过程日志均写一条执行记录（attempt 维度），实例详情时间线由此渲染。
@@ -175,7 +178,7 @@ sequenceDiagram
 | DEMO | `handler/demo` 包内置 5 个演示 handler，`dag.demo-enabled=true` 时才注册（默认关闭）；GraalJS 为 optional 依赖，classpath 缺失时 demo-script-exec 自动跳过注册 |
 | BUSINESS | 业务方实现的 handler 默认分类，注册即生效 |
 
-设计约束：`NodeHandlerRegistry` 收集容器内全部 handler 并按 nodeCode 索引，重复编码启动即失败；`SystemHandler` 枚举限定系统 handler 与 nodeType 的搭配（system-timer 仅限 NORMAL 节点），由 DagValidator 校验。START/END/BRANCH 统一走 worker 执行链路；**存量兼容**：特殊节点且 handler 为空时（历史定义），调度器领取后直达成功（passthrough），由引擎级联推进下游。
+设计约束：`NodeHandlerRegistry` 收集容器内全部 handler 并按 nodeCode 索引，重复编码启动即失败；`SystemHandler` 枚举限定系统 handler 与 nodeType 的搭配（system-timer 仅限 NORMAL 节点），由 DagValidator 校验。START/END/BRANCH 统一走 worker 执行链路；**存量兼容**：特殊节点且 handler 为空时（历史版本），调度器领取后直达成功（passthrough），由引擎级联推进下游。
 
 ### 重跑清理钩子
 
@@ -204,11 +207,12 @@ handler 内调用 `ctx.log(message)` 上报过程日志，采用"内存缓冲 + 
 
 ### 时间驱动触发
 
-START 节点 params 配置 `triggerType=TIMER` + `cron`（Spring 6 CronExpression 域）后，`DagTriggerScheduler` 按 `dag.trigger.interval-ms`（默认 30s）轮询 PUBLISHED 定义到点自动 launch：
+START 节点 params 配置 `triggerType=TIMER` + `cron`（Spring 6 CronExpression 域）后，`DagTriggerScheduler` 按 `dag.trigger.interval-ms`（默认 30s）轮询 PUBLISHED 流程版本到点自动 launch：
 
 - **幂等**：traceCode = `TIMER-{dagCode}-v{version}-{触发时间 yyyyMMddHHmmss}`，同一触发点仅发起一个实例（launch 的 traceCode 唯一校验天然拦截重复）；
 - **防竞争**：Redis 锁 `dag:trigger:lock:{dagCode}:{fireTime}`（tryLock 15s）防集群多实例同时触发；RedisLock 缺失时本轮跳过不崩；
-- **触发状态内存态**：dagCode → 版本 + cron + 下次触发时间，定义版本变化自动重建，重启自动恢复；停机期间错过的历史槽位不补触发，仅补触发最近一个到期槽位（从当前时间重新起算）；
+- **触发状态内存态**：dagCode → 版本 + cron + 下次触发时间，版本变化自动重建，重启自动恢复；停机期间错过的历史槽位不补触发，仅补触发最近一个到期槽位（从当前时间重新起算）；
+- **负缓存**：无 TIMER 触发的定义按 dagVersion 负缓存，仅版本变更时重新加载，避免每轮全量扫描；
 - **开关**：`dag.enabled=false` 或 `dag.trigger.enabled=false` 时触发器不运行，手动 launch 不受影响；triggerType=TIMER 时 cron 必填且可解析（DagValidator 校验）。
 
 ### 参数 schema 与定义校验
@@ -219,4 +223,4 @@ START 节点 params 配置 `triggerType=TIMER` + `cron`（Spring 6 CronExpressio
 - **校验**：DagValidator 在保存与发布时按 schema 校验 params——必填、条件必填（requiredWhen）、NUMBER 范围、CRON 可解析、DATETIME 格式、SELECT 枚举、KEY_VALUE 结构；schema 未声明的自由键不拦截。免 handler 的存量 START 节点按 nodeType 兜底校验 cron。
 - **结构校验**：节点编码唯一与格式、handler 注册、边端点存在、条件边 whenExpr 非空、Kahn 拓扑排序环检测、特殊节点拓扑约束（START 无入边、END 无出边、BRANCH 出边全为条件边）、nodeType 与 handler 匹配；发布时额外校验起始节点存在性。校验结果为问题清单供设计器展示，发布时存在任一问题即失败。
 
-**发布语义**：仅 DRAFT 定义可发布；发布时取该 dagCode 现有最大版本号 +1 作为新 dagVersion，节点/边行删除后按新版本重建，状态置 PUBLISHED。实例始终以"发起时锁定的版本"运行，编辑历史版本不影响存量实例；`/definition/copy` 可将任意定义复制成新 DRAFT 草稿继续演进。
+**发布语义**：仅 DRAFT 版本可发布；发布时版本号取该 dagCode 历史最大版本 +1，节点/边行先删除后按新版本重挂，状态置 PUBLISHED；全量校验失败（含起始节点缺失）则发布中断不落任何变更。实例始终以"发起时锁定的版本"运行，编辑历史版本不影响存量实例；已发布版本不可编辑，变更通过"以最新已发布版本为底稿创建新草稿"演进。
