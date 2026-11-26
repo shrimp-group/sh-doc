@@ -131,6 +131,8 @@ export default withMermaid({
           text: '权限',
           items: [
             {text: '概述', link: '/iam/'},
+            {text: '快速开始', link: '/iam/quick-start'},
+            {text: '部署指南', link: '/iam/deployment'},
             {text: '管理后台', link: '/iam/iam-admin'},
             {text: '后台启动器', link: '/iam/iam-admin-starter'},
             {text: '后台界面', link: '/iam/iam-admin-ui'},

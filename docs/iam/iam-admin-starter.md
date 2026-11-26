@@ -1,23 +1,83 @@
-# 管理后台启动器
+# 后台启动器
 
-IAM-Admin-Starter 是管理后台的独立启动模块，可直接运行作为微服务。
+IAM-Admin-Starter 是管理后台的独立启动模块，将 iam-admin 以独立微服务方式运行。
 
-## 功能特性
-
-- 独立部署：可作为独立服务运行
-- 自动配置：开箱即用
-- 集成 Swagger：自动生成 API 文档
-- 健康检查：集成 Actuator
+- 依赖坐标：`com.wkclz.iam:iam-admin-starter`（仅启动用途，install / deploy 已跳过）
+- 主类：`com.wkclz.iam.admin.starter.IamAdminApplication`（`@SpringBootApplication`）
+- 依赖模块：仅依赖 `iam-admin`，传递引入 iam-portal 及框架模块
 
 ## 快速开始
 
-### 启动服务
+### 打包
 
 ```bash
-java -jar iam-admin-starter.jar
+mvn clean package -DskipTests -pl iam-admin-starter -am
 ```
 
-### 访问地址
+`spring-boot-maven-plugin` 产出可执行 jar（`target/iam-admin-starter-*.jar`）。
 
-- 服务地址：`http://localhost:8080`
-- API 文档：`http://localhost:8080/swagger-ui.html`
+### 启动
+
+```bash
+java -jar iam-admin-starter/target/iam-admin-starter-*.jar
+```
+
+- 服务端口：`8080`
+- 管理端口：`50000`（Actuator 独立端口，暴露全部 endpoints，健康检查开启 probes）
+
+## 配置骨架
+
+`src/main/resources/config/application.yml`（敏感信息以 `<占位符>` 标注，按环境注入）：
+
+```yaml
+server:
+  port: 8080
+
+spring:
+  application:
+    name: iam-admin-starter
+  profiles:
+    active: local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 连接地址 / 账号 / 密码：<数据库连接信息>，不入仓库，由部署编排或环境变量注入
+  jackson:
+    default-property-inclusion: non_null
+
+mybatis:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  server:
+    port: 50000
+    base-path: /
+    ssl:
+      enabled: false
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoint:
+    health:
+      showDetails: always
+      probes:
+        enabled: true
+    shutdown:
+      enabled: true
+    restart:
+      enabled: true
+```
+
+- 日志配置：`logback-spring.xml`
+- 业务侧配置（`iam.api.scan.*`、Redis、权限缓存等）见各模块文档
