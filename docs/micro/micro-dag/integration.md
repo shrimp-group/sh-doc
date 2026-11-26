@@ -168,7 +168,7 @@ public List<NodeParamDef> paramSchema() {
 | system-start | 系统-开始节点 | 透传入参供下游 `${out.<node>.*}` 引用；支持时间驱动；参数定义 triggerType/cron/triggerParams | 节点 params | 入参透传 |
 | system-end | 系统-结束节点 | 直接成功 | 任意 | `{}` |
 | system-branch | 系统-分支节点 | 出边条件求值明细（launch 时 branches 快照进 inputParams；下游就绪判断逻辑不变） | branches（toCode→whenExpr，launch 自动写入） | `{branches: {toCode: bool}, selected: [toCode]}` |
-| system-timer | 系统-定时器 | 等待到点后成功（分片 sleep + 协作式中断），全局定时器节点无需业务实现；参数定义 delayMs/delayUntil | delayMs（0~86400000）/ delayUntil（ISO-8601） | `{waitedMs, targetTime}` |
+| system-timer | 系统-定时器 | 等待到点后成功（分片 sleep + 协作式中断），全局定时器节点无需业务实现；执行入口校验直接上游完成状态（SUCCESS/SKIPPED 视为完成，未完成置失败等人工干预，upstreams 由 launch 快照进 inputParams）；delayUntil 到点 24h 有效期（24h 内错过立即执行 waitedMs=0，超期置失败等人工干预）；参数定义 delayMs/delayUntil | delayMs（0~86400000）/ delayUntil（ISO-8601）/ upstreams（launch 自动写入，实例参数不可覆盖） | `{waitedMs, targetTime}` |
 
 #### 开始节点时间驱动
 

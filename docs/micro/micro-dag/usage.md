@@ -180,7 +180,7 @@ GET /micro-dag/instance/page?instanceCode=INST17636089201234&current=1&size=10
 GET /micro-dag/instance/detail?instanceCode=INST17636089201234
 ```
 
-返回 `InstanceDagViewResp`：`instance`（实例信息）、`nodes`（节点实例列表，含状态/attempt/入参输出/画布坐标）、`edges`（定义快照的边列表）、`ctx`（流程上下文）、`nodeOutputs`（各节点输出，`${out.<nodeCode>.*}` 数据源）。
+返回 `InstanceDagViewResp`：`instance`（实例信息）、`nodes`（节点实例列表，含状态/attempt/入参输出/画布坐标/`lastCostMs` 最后一次执行耗时——最后一次 CLAIM 至该次终态事件，RUNNING 中按当前时刻持续计算）、`edges`（定义快照的边列表）、`ctx`（流程上下文）、`nodeOutputs`（各节点输出，`${out.<nodeCode>.*}` 数据源）。
 
 ```json
 {
@@ -189,8 +189,8 @@ GET /micro-dag/instance/detail?instanceCode=INST17636089201234
   "data": {
     "instance": { "instanceCode": "INST17636089201234", "dagCode": "dag_8FJ2K3M4Q5", "dagVersion": 1, "status": "RUNNING", "traceCode": "TRC-20261120-0001" },
     "nodes": [
-      { "nodeCode": "start", "status": "SUCCESS", "attempt": 1 },
-      { "nodeCode": "fetch", "status": "RUNNING", "attempt": 1, "leaseOwner": "INST17636089201234:10.0.0.8:8080" },
+      { "nodeCode": "start", "status": "SUCCESS", "attempt": 1, "lastCostMs": 15 },
+      { "nodeCode": "fetch", "status": "RUNNING", "attempt": 1, "leaseOwner": "INST17636089201234:10.0.0.8:8080", "lastCostMs": 32000 },
       { "nodeCode": "gate",  "status": "PENDING", "attempt": 0 }
     ],
     "edges": [ { "edgeCode": "e1", "fromCode": "start", "toCode": "fetch" } ],

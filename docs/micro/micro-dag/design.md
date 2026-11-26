@@ -81,7 +81,7 @@ stateDiagram-v2
     RUNNING --> FAILED: onFailure(attempt > maxRetry)
     RUNNING --> RETRYING: onFailure(attempt <= maxRetry)
     RUNNING --> MANUAL_STOPPED: 协作式中断
-    RUNNING --> PENDING: 租约过期回收重派
+    RUNNING --> PENDING: 租约过期回收(attempt <= maxRetry)
     RETRYING --> PENDING: next_retry_time 到期提升
     FAILED --> PENDING: 人工重置 / 重跑
     SKIPPED --> PENDING: 人工重置 / 重跑
@@ -96,9 +96,9 @@ stateDiagram-v2
 | PENDING → RUNNING | DagScheduler.casClaim（version 乐观锁 + status 前置校验双保险，attempt+1） | CLAIM |
 | RUNNING → SUCCESS | DagEngineService.onSuccess | SUCCESS |
 | RUNNING → RETRYING | onFailure 且 attempt ≤ maxRetry，写 nextRetryTime | RETRY_SCHEDULED |
-| RUNNING → FAILED | onFailure 且 attempt 耗尽 | FAIL / TIMEOUT |
+| RUNNING → FAILED | onFailure 且 attempt 耗尽；或租约回收时 attempt 耗尽（errorMsg=租约过期回收，重试次数已耗尽） | FAIL / TIMEOUT / LEASE_RECLAIM |
 | RUNNING → MANUAL_STOPPED | 协作式中断命中（中断标记 + cancel） | INTERRUPT |
-| RUNNING → PENDING | 租约过期回收（lease_expire_time < now），重派 | LEASE_RECLAIM |
+| RUNNING → PENDING | 租约过期回收（lease_expire_time < now）且 attempt ≤ maxRetry，重派 | LEASE_RECLAIM |
 | RETRYING → PENDING | 调度提升（next_retry_time ≤ now） | — |
 | PENDING → SKIPPED | 级联跳过（skipReason=上游分支条件不满足）或人工跳过 | SKIP |
 
@@ -155,7 +155,7 @@ sequenceDiagram
 
 - **租约时长**：无超时节点用 `dag.lease.fixed-ms`（默认 120s）；有超时节点取 `max(fixedMs, timeoutMs + 30s)`，保证租约恒覆盖超时窗口——超时由 worker 侧 `Future.get` 强制，避免超时瞬间与故障转移重派撞车。
 - **续期**：监督线程按 `leaseMs / 3` 周期调用 `renewLease`（带 leaseOwner 条件更新），长任务持续保活。
-- **故障转移**：持有节点执行的实例宕机后租约到期，调度扫描发现 `RUNNING AND lease_expire_time < now` 即重置 PENDING 并记 LEASE_RECLAIM 事件，下一轮由任意实例重新领取。工作线程无法被强杀，宕机实例重启后由租约自然对齐，无孤儿任务。
+- **故障转移**：持有节点执行的实例宕机后租约到期，调度扫描发现 `RUNNING AND lease_expire_time < now` 即回收并记 LEASE_RECLAIM 事件：attempt ≤ maxRetry 时重置 PENDING 重派（消耗重试次数），attempt 耗尽则置 FAILED（errorMsg=租约过期回收，重试次数已耗尽），等待人工干预。工作线程无法被强杀，宕机实例重启后由租约自然对齐，无孤儿任务。
 
 ### 失败重试
 
@@ -214,6 +214,13 @@ START 节点 params 配置 `triggerType=TIMER` + `cron`（Spring 6 CronExpressio
 - **触发状态内存态**：dagCode → 版本 + cron + 下次触发时间，版本变化自动重建，重启自动恢复；停机期间错过的历史槽位不补触发，仅补触发最近一个到期槽位（从当前时间重新起算）；
 - **负缓存**：无 TIMER 触发的定义按 dagVersion 负缓存，仅版本变更时重新加载，避免每轮全量扫描；
 - **开关**：`dag.enabled=false` 或 `dag.trigger.enabled=false` 时触发器不运行，手动 launch 不受影响；triggerType=TIMER 时 cron 必填且可解析（DagValidator 校验）。
+
+### 定时器节点触发语义
+
+system-timer（流程中间等待节点）执行入口有两道防线，防止"等错了还继续等"：
+
+- **上游校验**：launch 时定时器的直接上游编码（入边 fromCode 去重，NORMAL+CONDITION 边）快照进 inputParams 的 `upstreams` 键（最后合并，实例参数不可覆盖）。执行入口校验全部直接上游为 SUCCESS / SKIPPED（手动跳过视为完成），存在未完成上游直接显式失败（msg=上游节点未完成），不进入等待，由人工干预恢复——避免上游尚未完成时定时器先行放行。
+- **到点有效期**：delayUntil 绝对到点时间具 24h 有效期——24h 内错过（如下游阻塞、故障转移延迟）走等待循环自然立即成功（waitedMs=0）；超期置失败（msg=定时任务已过期超过 1 天）等人工干预，避免陈旧定时放行过期链路。
 
 ### 参数 schema 与定义校验
 
